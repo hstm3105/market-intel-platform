@@ -178,4 +178,4 @@
 - [x] Define shared experience standards for page hierarchy, action placement, loading and empty states, responsive density, and accessibility feedback.
 - [x] Apply the prioritized UI/UX remediation pass across research, intelligence, delivery, organization, and governance workspaces.
 - [x] Add regression coverage for the shared UI standards and validate the refined application on desktop and mobile.
-- [ ] Publish the comprehensive UI/UX diagnostic and improvement release.
+- [x] Publish the comprehensive UI/UX diagnostic and improvement release.
