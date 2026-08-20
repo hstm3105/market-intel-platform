@@ -56,6 +56,21 @@ export function monitoringSchedule(cadence: MonitoringCadence) {
     : { cron: "0 0 9 * * 1", label: "Weekly · Monday 09:00 UTC" };
 }
 
+export function nextMonitoringRunAt(cadence: MonitoringCadence, from = new Date()) {
+  const next = new Date(from);
+  if (cadence === "weekly") {
+    const daysUntilMonday = (8 - next.getUTCDay()) % 7;
+    next.setUTCDate(next.getUTCDate() + daysUntilMonday);
+    next.setUTCHours(9, 0, 0, 0);
+    if (next.getTime() <= from.getTime()) next.setUTCDate(next.getUTCDate() + 7);
+    return next;
+  }
+  next.setUTCDate(1);
+  next.setUTCHours(9, 0, 0, 0);
+  if (next.getTime() <= from.getTime()) next.setUTCMonth(next.getUTCMonth() + 1);
+  return next;
+}
+
 export function filterMonitoringAlerts(alerts: ChangeAlert[], riskThreshold: RiskThreshold, minimumSeverity: RiskThreshold) {
   return alerts
     .filter(alert => riskThreshold === "all" || alert.severity === "high")
@@ -116,7 +131,8 @@ async function getMonitoredIndustry(userId: number, organizationId: string, moni
 
 export async function listMonitoredIndustries(userId: number, organizationId: string) {
   const db = await requireDb();
-  return db.select().from(monitoredIndustries).where(and(eq(monitoredIndustries.userId, userId), eq(monitoredIndustries.organizationId, organizationId))).orderBy(desc(monitoredIndustries.updatedAt));
+  const monitors = await db.select().from(monitoredIndustries).where(and(eq(monitoredIndustries.userId, userId), eq(monitoredIndustries.organizationId, organizationId))).orderBy(desc(monitoredIndustries.updatedAt));
+  return monitors.map(monitor => ({ ...monitor, nextRunAt: monitor.nextRunAt ?? nextMonitoringRunAt(monitor.cadence) }));
 }
 
 export async function createMonitoredIndustry(userId: number, organizationId: string, input: { industrySlug: string; industryName: string; scope: string; cadence: MonitoringCadence; riskThreshold: RiskThreshold }, userSession: string) {
@@ -128,7 +144,7 @@ export async function createMonitoredIndustry(userId: number, organizationId: st
   const schedule = monitoringSchedule(input.cadence);
   const heartbeat = await createHeartbeatJob({ name: `market-monitor-${id}`, cron: schedule.cron, path: "/api/scheduled/market-monitor", method: "POST", description: `Refresh ${input.industryName} market intelligence` }, userSession);
   try {
-    const monitor = { id, userId, organizationId, industrySlug: input.industrySlug, industryName: input.industryName, scope: input.scope, cadence: input.cadence, cronExpression: schedule.cron, scheduleCronTaskUid: heartbeat.taskUid, enabled: true, riskThreshold: input.riskThreshold, lastScanId: null, lastRunAt: null, nextRunAt: asDate(heartbeat.nextExecutionAt) };
+    const monitor = { id, userId, organizationId, industrySlug: input.industrySlug, industryName: input.industryName, scope: input.scope, cadence: input.cadence, cronExpression: schedule.cron, scheduleCronTaskUid: heartbeat.taskUid, enabled: true, riskThreshold: input.riskThreshold, lastScanId: null, lastRunAt: null, nextRunAt: asDate(heartbeat.nextExecutionAt) ?? nextMonitoringRunAt(input.cadence) };
     await db.insert(monitoredIndustries).values(monitor);
     return monitor;
   } catch (error) {
@@ -147,7 +163,7 @@ export async function updateMonitoredIndustry(userId: number, organizationId: st
   let nextRunAt = monitor.nextRunAt;
   if (monitor.scheduleCronTaskUid) {
     const response = await updateHeartbeatJob(monitor.scheduleCronTaskUid, { cron: patch.cadence ? schedule.cron : undefined, enable: patch.enabled }, userSession);
-    nextRunAt = asDate(response.nextExecutionAt) ?? nextRunAt;
+    nextRunAt = asDate(response.nextExecutionAt) ?? nextMonitoringRunAt(cadence);
   }
   const values = { scope: patch.scope ?? monitor.scope, cadence, cronExpression: schedule.cron, riskThreshold: patch.riskThreshold ?? monitor.riskThreshold, enabled: patch.enabled ?? monitor.enabled, nextRunAt };
   await db.update(monitoredIndustries).set(values).where(and(eq(monitoredIndustries.id, monitoredIndustryId), eq(monitoredIndustries.userId, userId), eq(monitoredIndustries.organizationId, organizationId)));
@@ -214,7 +230,7 @@ export async function runMonitoredScan(taskUid: string, options: { force?: boole
   const sources = await (dependencies.collectSources ?? collectPublicSources)(monitor.industryName);
   const analysis = await (dependencies.buildScan ?? generateMarketScan)({ industry: monitor.industryName, scope: monitor.scope, sources });
   const scan = await (dependencies.saveScan ?? saveScanPackage)(monitor.userId, monitor.organizationId, { industrySlug: monitor.industrySlug, industryName: monitor.industryName, scope: monitor.scope, sources, analysis, monitoredIndustryId: monitor.id });
-  await db.update(monitoredIndustries).set({ lastScanId: scan.id, lastRunAt: new Date() }).where(eq(monitoredIndustries.id, monitor.id));
+  await db.update(monitoredIndustries).set({ lastScanId: scan.id, lastRunAt: new Date(), nextRunAt: nextMonitoringRunAt(monitor.cadence) }).where(eq(monitoredIndustries.id, monitor.id));
   if (!previous) return { status: "baseline_created" as const, scanId: scan.id, alertsCreated: 0 };
   const preferences = await (dependencies.loadPreferences ?? getMonitoringPreferences)(monitor.userId, monitor.organizationId);
   if (!preferences.inAppEnabled) return { status: "completed" as const, scanId: scan.id, alertsCreated: 0 };

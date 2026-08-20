@@ -62,10 +62,14 @@
 - [x] Add protected monitoring controls for cadence, risk thresholds, and alert delivery preferences.
 - [x] Build monitoring and alert-review interfaces for consultants and organization owners.
 - [x] Add automated coverage for organization-private monitoring and alert behavior.
-- [ ] Validate a full monitored-industry refresh and alert-review workflow.
+- [x] Validate a full monitored-industry refresh and alert-review workflow.
 - [x] Add router-level monitoring tests for active-organization scoping and viewer write restrictions.
 - [x] Add scheduled-refresh tests for task-UID lookup, baseline behavior, and alert privacy/read state.
 - [x] Add scheduled-monitor tests proving generated alerts remain private to the monitored industry’s organization.
 - [x] Add organization-scoped unread-to-read alert lifecycle coverage for monitored refresh alerts.
 - [x] Add a scheduled refresh workflow test that persists private alerts from a prior monitored baseline.
 - [x] Add a monitored-alert lifecycle test that verifies unread alerts transition to read only within their owning organization.
+- [x] Validate the published monitored-industry schedule and private alert-review workflow.
+- [x] Define an enterprise SSO provider strategy and identity-governance configuration model for the next capability.
+- [ ] Validate a second production refresh that generates an alert, opens its linked scan, and marks it read in the UI.
+- [ ] Investigate and fix missing published next-run schedule visibility for monitored industries, then confirm the recurring job is displayed.

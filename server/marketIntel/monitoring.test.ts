@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterMonitoringAlerts, monitoringSchedule } from "./monitoring";
+import { filterMonitoringAlerts, monitoringSchedule, nextMonitoringRunAt } from "./monitoring";
 
 const alerts = [
   { category: "risk" as const, severity: "high" as const, title: "Regulatory inflection", summary: "A material policy shift is supported by fresh evidence.", evidenceSourceIds: ["S1"] },
@@ -11,6 +11,11 @@ describe("continuous monitoring policy", () => {
   it("uses valid six-field UTC schedules for the supported consultant cadences", () => {
     expect(monitoringSchedule("weekly").cron).toBe("0 0 9 * * 1");
     expect(monitoringSchedule("monthly").cron).toBe("0 0 9 1 * *");
+  });
+
+  it("derives a visible next-run date when the scheduling service has not returned one", () => {
+    expect(nextMonitoringRunAt("weekly", new Date("2026-08-20T10:00:00.000Z")).toISOString()).toBe("2026-08-24T09:00:00.000Z");
+    expect(nextMonitoringRunAt("monthly", new Date("2026-08-20T10:00:00.000Z")).toISOString()).toBe("2026-09-01T09:00:00.000Z");
   });
 
   it("keeps all material changes when both organization-private thresholds allow them", () => {
