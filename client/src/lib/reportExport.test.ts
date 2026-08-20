@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildReportSections, filenameStem, resolveEmergingRisks, type MarketScanReport } from "./reportExport";
+import { buildReportSections, filenameStem, resolveEmergingRisks, sourceGovernanceSummary, type MarketScanReport } from "./reportExport";
 
 const report: MarketScanReport = {
   industryName: "FinTech", scope: "Payments infrastructure", createdAt: "2026-08-20", sources: [], competitors: [],
@@ -24,5 +24,16 @@ describe("market scan report exports", () => {
 
     expect(ranked.map(risk => risk.rank)).toEqual([1, 3]);
     expect(legacy[0]).toMatchObject({ rank: 1, title: "Risk", sourceIds: ["S2"] });
+  });
+
+  it("adds deterministic source-confidence and governance content to export models", () => {
+    const governed = { ...report, sources: [
+      { id: "S1", title: "Policy update", publisher: "FCA", publishedAt: "2026-08-01", url: "https://www.fca.org.uk/news" },
+      { id: "S2", title: "Market report", publisher: "Reuters", publishedAt: "2026-08-10", url: "https://www.reuters.com/markets" },
+    ] };
+    const summary = sourceGovernanceSummary(governed);
+    expect(summary.line).toContain("Evidence confidence");
+    expect(summary.line).toContain("not the truth of individual claims");
+    expect(summary.intelligence).toMatchObject({ totalSources: 2, uniquePublishers: 2, traceableSources: 2 });
   });
 });

@@ -72,4 +72,14 @@
 - [x] Validate the published monitored-industry schedule and private alert-review workflow.
 - [x] Define an enterprise SSO provider strategy and identity-governance configuration model for the next capability.
 - [ ] Validate a second production refresh that generates an alert, opens its linked scan, and marks it read in the UI.
-- [ ] Investigate and fix missing published next-run schedule visibility for monitored industries, then confirm the recurring job is displayed.
+- [x] Investigate and fix missing published next-run schedule visibility for monitored industries, then confirm the recurring job is displayed.
+- [x] Define source-quality, recency, diversity, and traceability signals for public-web market research.
+- [x] Enrich saved scan sources with deterministic evidence-quality metadata and confidence flags.
+- [x] Add source-intelligence summaries to consultant scan detail and report exports.
+- [x] Add automated coverage for source-quality scoring and scan-level evidence governance.
+- [x] Attach deterministic source-intelligence metadata and confidence to saved scan records returned by the research API.
+- [x] Render authority, recency, diversity, traceability, and confidence directly in active scan detail.
+- [x] Extend automated coverage for scan-detail and export source-governance integration.
+- [x] Add API-contract tests for scan source-intelligence metadata and scan-detail evidence presentation metrics.
+- [x] Extend report-export tests to assert source-confidence and governance content are included in PDF and PowerPoint outputs.
+- [x] Mock PDF and PowerPoint renderers to verify final exported output includes source-confidence and evidence-governance content.

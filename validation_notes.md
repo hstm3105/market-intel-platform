@@ -33,3 +33,15 @@ The Risk Q&A brief export completed successfully and displayed the confirmation 
 ## Organization and Role Management Validation
 
 After authenticated sign-in, the new organization page created and displayed the owner workspace **Harshit Intelligence**, with the Owner role, one-member directory, workspace switcher, invitation control, and supported enterprise roles (Admin, Research lead, Analyst, Viewer). No additional member was created during validation. The existing Consumer and FinTech research records remained visible in the active organization workspace after the additive organization assignment.
+
+## Continuous Monitoring Validation
+
+The published Monitoring workspace created an authenticated FinTech watch and persisted a public-source baseline scan. A second published refresh also completed and saved a new scan. It found no material change supported by the fresh source packet, so the private alert feed correctly remained empty; the unread-to-read alert lifecycle is separately covered by the automated monitoring workflow tests.
+
+When the scheduler did not return its next-execution metadata, the application derived a deterministic UTC cadence fallback. The published FinTech watch now displays its completed baseline run and upcoming weekly refresh time.
+
+## Source Intelligence Validation
+
+The Source Intelligence workspace renders against saved market scans and presents deterministic source authority, recency, publisher diversity, direct-link traceability, confidence, and governance caveats. The screen explicitly frames these as evidence-quality signals rather than assertions that individual source claims are true.
+
+The active FinTech scan-detail page now renders the same source-intelligence summary directly above the existing scan experience, including confidence score, authority, recency, publisher diversity, traceability, and tier counts. The dedicated Source Intelligence workspace and direct scan-detail review link both render successfully in the consultant shell.
