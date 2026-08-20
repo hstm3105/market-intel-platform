@@ -11,3 +11,11 @@ The research workspace shows the FinTech scan under its named project, “Fintec
 The FinTech scan-detail header now presents distinct **Export PDF** and **Export PowerPoint** actions beside the existing Markdown export. The PDF generation flow was initiated against the authenticated FinTech report after compilation and report-model tests completed successfully.
 
 Both browser download flows completed successfully. The application displayed **“PDF report prepared for download”** after PDF generation and **“PowerPoint report prepared for download”** after the editable deck generation. The completed reports include the scan’s synthesis, structured signals, market landscape, strategic perspective, competitor highlights, and source traceability.
+
+## Risk Q&A Validation
+
+The FinTech scan now renders a dedicated **Risk Q&A** panel underneath the ranked emerging-risk synthesis. A live prompt asking what could materially worsen the funding-discipline risk was submitted through the dedicated risk channel; its response is being monitored to confirm private persistence separately from general scan chat.
+
+The Risk Q&A response completed successfully with a source-grounded assessment of factors that could worsen the funding-discipline risk, explicit evidence versus inference, uncertainty statements, decision-relevant implications, and citations including [S4], [S8], [S7], [S6], [S1], and [S11].
+
+Reloading the FinTech scan restored the submitted question and its Risk Q&A response in the dedicated panel, confirming that the conversation persists independently from the general scan-chat channel.

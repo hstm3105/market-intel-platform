@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { renderBriefMarkdown, renderCompetitorMarkdown } from "./markdown";
+import { channelForQuestionMode, selectConversationHistory } from "./chat";
 import { INDUSTRY_CATALOG, getIndustry } from "./catalog";
 import { addChatTurn, addNote, dashboard, getScan, listTrackedIndustries, listWorkspace, saveScanPackage, setTrackedIndustry } from "./db";
 import { answerResearchQuestion, collectPublicSources, generateMarketScan, type ResearchSource, type ScanAnalysis } from "./research";
@@ -43,14 +44,15 @@ export const marketIntelRouter = router({
     return { scanId: scan.id };
   }),
   addNote: protectedProcedure.input(z.object({ scanId: z.string().min(1).max(40), title: z.string().min(2).max(220), content: z.string().min(1).max(20_000) })).mutation(({ ctx, input }) => addNote(ctx.user.id, input)),
-  ask: protectedProcedure.input(z.object({ scanId: z.string().min(1).max(40), question: z.string().min(2).max(4_000) })).mutation(async ({ ctx, input }) => {
+  ask: protectedProcedure.input(z.object({ scanId: z.string().min(1).max(40), question: z.string().min(2).max(4_000), mode: z.enum(["general", "risk"]).optional().default("general") })).mutation(async ({ ctx, input }) => {
     const result = await getScan(ctx.user.id, input.scanId);
     if (!result) throw new TRPCError({ code: "NOT_FOUND", message: "This private research scan could not be found." });
     const { sources, analysis } = parseStoredScan(result.scan.sourceJson, result.scan.analysisJson);
     const context = JSON.stringify({ industry: result.scan.industryName, scope: result.scan.scope, analysis, sources });
-    const history = result.messages.slice(-8).map(message => ({ role: message.role, content: message.content }));
-    const answer = await answerResearchQuestion({ question: input.question, scanContext: context, history });
-    await addChatTurn(ctx.user.id, input.scanId, input.question, answer);
+    const channel = channelForQuestionMode(input.mode);
+    const history = selectConversationHistory(result.messages, channel);
+    const answer = await answerResearchQuestion({ question: input.question, scanContext: context, history, focus: input.mode === "risk" ? "emerging_risks" : "market" });
+    await addChatTurn(ctx.user.id, input.scanId, input.question, answer, channel);
     return { answer };
   }),
   exportBrief: protectedProcedure.input(idInput).query(async ({ ctx, input }) => {

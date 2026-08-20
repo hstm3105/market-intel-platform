@@ -128,6 +128,7 @@ export const chatMessages = mysqlTable(
     id: varchar("id", { length: 32 }).primaryKey(),
     userId: int("userId").notNull(),
     scanId: varchar("scanId", { length: 32 }).notNull(),
+    channel: mysqlEnum("channel", ["general", "risk"]).default("general").notNull(),
     role: mysqlEnum("role", ["user", "assistant"]).notNull(),
     content: longtext("content").notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),

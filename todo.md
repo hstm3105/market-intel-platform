@@ -29,3 +29,11 @@
 - [x] Render the AI-powered risk summary in the market-scan view and shareable report exports.
 - [x] Add tests for emerging-risk summary parsing and presentation safeguards.
 - [x] Restore legacy saved-scan detail rendering while preserving the new emerging-risk summary fallback.
+- [x] Define a focused, evidence-grounded risk-question context for private market scans.
+- [x] Extend the agentic question workflow to answer risk-specific questions using the active scan and its sources.
+- [x] Add a natural-language Risk Q&A interface with suggested prompts and persisted private chat turns.
+- [x] Add automated coverage and live validation for risk-specific question handling.
+- [x] Persist and reload Risk Q&A turns separately from general scan chat while keeping both private to the active scan.
+- [x] Add router-level automated coverage for risk-mode history filtering and channel-separated persistence.
+- [x] Submit and reload a live Risk Q&A response to verify channel-separated conversation persistence.
+- [x] Add a router-caller test proving risk-mode questions use only risk history and persist turns to the risk channel.

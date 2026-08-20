@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { chatMessages, competitorProfiles, marketScans, researchArtifacts, researchNotes, researchProjects, trackedIndustries } from "../../drizzle/schema";
 import { getDb } from "../db";
+import { createChatTurnRecords, type ChatChannel } from "./chat";
 import type { ResearchSource, ScanAnalysis } from "./research";
 
 const requireDb = async () => {
@@ -99,10 +100,7 @@ export async function addNote(userId: number, input: { scanId: string; title: st
   return note;
 }
 
-export async function addChatTurn(userId: number, scanId: string, question: string, answer: string) {
+export async function addChatTurn(userId: number, scanId: string, question: string, answer: string, channel: ChatChannel = "general") {
   const db = await requireDb();
-  await db.insert(chatMessages).values([
-    { id: nanoid(), userId, scanId, role: "user" as const, content: question },
-    { id: nanoid(), userId, scanId, role: "assistant" as const, content: answer },
-  ]);
+  await db.insert(chatMessages).values(createChatTurnRecords({ userId, scanId, question, answer, channel, createId: nanoid }));
 }

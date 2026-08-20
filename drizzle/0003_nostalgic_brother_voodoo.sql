@@ -1,0 +1,1 @@
+ALTER TABLE `chat_messages` ADD `channel` enum('general','risk') DEFAULT 'general' NOT NULL;
