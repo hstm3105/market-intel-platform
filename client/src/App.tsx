@@ -20,7 +20,7 @@ import EvidenceAgents from "./pages/EvidenceAgents";
 import PortfolioIntelligence from "./pages/PortfolioIntelligence";
 import Workspace from "./pages/Workspace";
 
-const COLLABORATION_RELEASE = "advanced-evidence-agents-v1";
+const COLLABORATION_RELEASE = "portfolio-command-center-v1";
 
 function Router() { return <DashboardLayout><Switch><Route path="/" component={Home} /><Route path="/new" component={NewResearch} /><Route path="/industries" component={IndustryPreferences} /><Route path="/monitoring" component={Monitoring} /><Route path="/source-intelligence" component={SourceIntelligence} /><Route path="/knowledge" component={KnowledgeManagement} /><Route path="/portfolio" component={PortfolioIntelligence} /><Route path="/workspace" component={Workspace} /><Route path="/workspace/:scanId" component={ScanDetail} /><Route path="/risk-comparison" component={RiskComparison} /><Route path="/organization" component={OrganizationSettings} /><Route path="/governance" component={Governance} /><Route path="/collaboration" component={Collaboration} /><Route path="/agents" component={EvidenceAgents} /><Route path="/404" component={NotFound} /><Route component={NotFound} /></Switch></DashboardLayout>; }
 function App() { return <ErrorBoundary><div data-release={COLLABORATION_RELEASE}><ThemeProvider defaultTheme="light"><TooltipProvider><Toaster /><Router /></TooltipProvider></ThemeProvider></div></ErrorBoundary>; }
