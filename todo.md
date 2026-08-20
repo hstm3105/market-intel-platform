@@ -44,3 +44,22 @@
 - [x] Add protected-router coverage for risk-answer export filename, content, and source traceability.
 - [x] Add protected-router coverage for pinning a Risk Q&A answer into the active private scan notes.
 - [x] Add an authenticated router-caller test that saves a Risk Q&A answer payload into the active private scan notes.
+- [x] Define organization, membership, role, and active-workspace data models that preserve existing private research.
+- [x] Create and apply an additive migration that assigns existing research safely to a default owner organization.
+- [x] Implement protected organization, membership, and active-workspace procedures with role enforcement.
+- [x] Scope research queries and mutations to the authenticated user’s active organization while preserving member privacy.
+- [x] Build organization management, member-directory, and active-workspace controls.
+- [x] Add automated coverage for organization bootstrap, membership access, and role restrictions.
+- [x] Validate the organization-admin and member workflow in the live workspace.
+- [x] Add and apply a deterministic data migration that backfills every legacy user and research record into an owner organization.
+- [x] Add automated bootstrap-contract coverage for default organization identity, owner membership, active workspace assignment, and legacy-research backfill intent.
+- [x] Defer by owner: real added-member, role-update, and member workspace-access acceptance testing until a signed-in colleague is available.
+- [x] Deferred by owner: live colleague invitation, role-change, and member-access acceptance testing when a signed-in colleague is available.
+- [x] Strengthen bootstrap coverage with explicit active-organization assignment and per-table legacy-backfill assertions.
+- [x] Assert that every concrete legacy research table receives an organization backfill update during bootstrap.
+- [ ] Define monitored-industry, scheduled-scan, change-event, and alert-preference data models scoped to the active organization.
+- [ ] Implement organization-aware change detection that compares fresh scan findings against prior monitored research.
+- [ ] Add protected monitoring controls for cadence, risk thresholds, and alert delivery preferences.
+- [ ] Build monitoring and alert-review interfaces for consultants and organization owners.
+- [ ] Add automated coverage for organization-private monitoring and alert behavior.
+- [ ] Validate a full monitored-industry refresh and alert-review workflow.

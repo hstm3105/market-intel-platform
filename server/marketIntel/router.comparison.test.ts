@@ -23,6 +23,17 @@ vi.mock("./research", () => ({
   generateMarketScan: vi.fn(),
 }));
 
+vi.mock("./organization", () => ({
+  getActiveOrganization: vi.fn().mockResolvedValue({ organization: { id: "org-test", name: "Test Intelligence", ownerUserId: 1 }, membership: { organizationId: "org-test", userId: 1, role: "owner" } }),
+  canCreateResearch: vi.fn(() => true),
+  canManageMembers: vi.fn(() => true),
+  changeMemberRole: vi.fn(),
+  addExistingMember: vi.fn(),
+  listMembers: vi.fn(),
+  listOrganizations: vi.fn(),
+  switchOrganization: vi.fn(),
+}));
+
 import { marketIntelRouter } from "./router";
 
 function context(): TrpcContext {
@@ -41,7 +52,7 @@ const resultFor = (id: string, industryName: string) => ({
 describe("marketIntel.compareRisks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.getScan.mockImplementation(async (_userId: number, scanId: string) => scanId === "consumer" ? resultFor("consumer", "Consumer") : scanId === "fintech" ? resultFor("fintech", "FinTech") : null);
+    mocks.getScan.mockImplementation(async (_userId: number, _organizationId: string, scanId: string) => scanId === "consumer" ? resultFor("consumer", "Consumer") : scanId === "fintech" ? resultFor("fintech", "FinTech") : null);
     mocks.answerResearchQuestion.mockResolvedValue("Shared exposure comparison [S1]");
   });
 
@@ -50,8 +61,8 @@ describe("marketIntel.compareRisks", () => {
     const result = await caller.compareRisks({ scanIds: ["consumer", "fintech"], question: "Which risk is most material across both selected industries?" });
 
     expect(result.answer).toBe("Shared exposure comparison [S1]");
-    expect(mocks.getScan).toHaveBeenNthCalledWith(1, 1, "consumer");
-    expect(mocks.getScan).toHaveBeenNthCalledWith(2, 1, "fintech");
+    expect(mocks.getScan).toHaveBeenNthCalledWith(1, 1, "org-test", "consumer");
+    expect(mocks.getScan).toHaveBeenNthCalledWith(2, 1, "org-test", "fintech");
     expect(mocks.answerResearchQuestion).toHaveBeenCalledWith(expect.objectContaining({
       focus: "risk_comparison",
       history: [],

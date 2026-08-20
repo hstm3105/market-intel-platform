@@ -29,3 +29,7 @@ The comparison completed successfully using only the selected Consumer and FinTe
 The FinTech scan detail now shows **Export answer** and **Pin to notes** controls directly above the persisted Risk Q&A conversation.
 
 The Risk Q&A brief export completed successfully and displayed the confirmation **“Risk Q&A brief prepared for download.”** The same answer was pinned successfully to the FinTech scan notes, confirmed by the private-workspace notification **“Note saved to this research workspace.”**
+
+## Organization and Role Management Validation
+
+After authenticated sign-in, the new organization page created and displayed the owner workspace **Harshit Intelligence**, with the Owner role, one-member directory, workspace switcher, invitation control, and supported enterprise roles (Admin, Research lead, Analyst, Viewer). No additional member was created during validation. The existing Consumer and FinTech research records remained visible in the active organization workspace after the additive organization assignment.

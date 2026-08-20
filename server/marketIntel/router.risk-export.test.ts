@@ -9,6 +9,17 @@ vi.mock("./db", () => ({
 }));
 vi.mock("./research", () => ({ answerResearchQuestion: vi.fn(), collectPublicSources: vi.fn(), generateMarketScan: vi.fn() }));
 
+vi.mock("./organization", () => ({
+  getActiveOrganization: vi.fn().mockResolvedValue({ organization: { id: "org-test", name: "Test Intelligence", ownerUserId: 1 }, membership: { organizationId: "org-test", userId: 1, role: "owner" } }),
+  canCreateResearch: vi.fn(() => true),
+  canManageMembers: vi.fn(() => true),
+  changeMemberRole: vi.fn(),
+  addExistingMember: vi.fn(),
+  listMembers: vi.fn(),
+  listOrganizations: vi.fn(),
+  switchOrganization: vi.fn(),
+}));
+
 import { marketIntelRouter } from "./router";
 
 function context(): TrpcContext {
@@ -28,7 +39,7 @@ describe("marketIntel.exportRiskAnswer", () => {
     const caller = marketIntelRouter.createCaller(context());
     const result = await caller.exportRiskAnswer({ scanId: "scan-1", messageId: "risk-answer" });
 
-    expect(mocks.getScan).toHaveBeenCalledWith(1, "scan-1");
+    expect(mocks.getScan).toHaveBeenCalledWith(1, "org-test", "scan-1");
     expect(result.filename).toBe("fintech-risk-qa-brief.md");
     expect(result.content).toContain("# FinTech — Risk Q&A Brief");
     expect(result.content).toContain("Consent exposure is rising");
@@ -42,6 +53,6 @@ describe("marketIntel.exportRiskAnswer", () => {
 
     await caller.addNote(input);
 
-    expect(mocks.addNote).toHaveBeenCalledWith(1, input);
+    expect(mocks.addNote).toHaveBeenCalledWith(1, "org-test", input);
   });
 });
