@@ -236,6 +236,40 @@ export const organizationAuditEvents = mysqlTable(
   table => [index("organization_audit_events_org_created_idx").on(table.organizationId, table.createdAt), index("organization_audit_events_org_actor_idx").on(table.organizationId, table.actorUserId, table.createdAt), index("organization_audit_events_org_type_idx").on(table.organizationId, table.eventType, table.createdAt)]
 );
 
+export const collaborationComments = mysqlTable(
+  "collaboration_comments",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    targetType: mysqlEnum("targetType", ["market_scan", "knowledge_asset"]).notNull(),
+    targetId: varchar("targetId", { length: 32 }).notNull(),
+    authorUserId: int("authorUserId").notNull(),
+    body: longtext("body").notNull(),
+    mentionedUserIdsJson: longtext("mentionedUserIdsJson").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [index("collaboration_comments_org_target_created_idx").on(table.organizationId, table.targetType, table.targetId, table.createdAt), index("collaboration_comments_org_author_created_idx").on(table.organizationId, table.authorUserId, table.createdAt)]
+);
+
+export const collaborationReviews = mysqlTable(
+  "collaboration_reviews",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    targetType: mysqlEnum("targetType", ["market_scan", "knowledge_asset"]).notNull(),
+    targetId: varchar("targetId", { length: 32 }).notNull(),
+    status: mysqlEnum("status", ["draft", "in_review", "changes_requested", "approved"]).default("draft").notNull(),
+    requestedByUserId: int("requestedByUserId").notNull(),
+    reviewerUserId: int("reviewerUserId"),
+    decisionByUserId: int("decisionByUserId"),
+    decisionNote: longtext("decisionNote").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("collaboration_reviews_org_target_unique").on(table.organizationId, table.targetType, table.targetId), index("collaboration_reviews_org_status_updated_idx").on(table.organizationId, table.status, table.updatedAt), index("collaboration_reviews_org_reviewer_status_idx").on(table.organizationId, table.reviewerUserId, table.status)]
+);
+
 export const researchArtifacts = mysqlTable(
   "research_artifacts",
   {

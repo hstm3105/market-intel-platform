@@ -110,3 +110,14 @@
 - [x] Record completed PDF and PowerPoint exports as organization-scoped audit events after a successful client-side download.
 - [x] Add governance workspace retry states for organization-context and governance-overview query failures while preserving unsaved policy input after mutation failures.
 - [x] Strengthen governance tests with mixed-organization audit fixtures and retention-policy upsert persistence assertions.
+- [x] Define organization-private comments, mentions, and review-state data models for scans and knowledge assets.
+- [x] Apply an additive collaboration migration with organization, author, target, and status indexes.
+- [x] Implement protected comment, mention, review-request, and approval procedures with deterministic RBAC rules.
+- [x] Record collaboration and approval actions in the organization audit trail.
+- [x] Build a consultant collaboration workspace with discussion threads, review status, and approval controls.
+- [x] Add automated coverage for cross-organization privacy, role restrictions, review transitions, and approval integrity.
+- [x] Validate and publish the collaboration and review workflow increment before progressing to advanced agent orchestration.
+- [x] Add explicit collaboration-overview error and retry handling in the consultant workspace.
+- [x] Add service-level mixed-organization collaboration isolation coverage for comments, reviews, and foreign targets.
+- [x] Add review-transition integrity coverage for pre-request decisions, assigned reviewers, self-review rejection, and re-request resets.
+- [x] Add assigned-reviewer and owner/admin override coverage for review decisions.

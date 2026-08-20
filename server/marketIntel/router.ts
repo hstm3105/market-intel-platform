@@ -10,6 +10,7 @@ import { renderBriefMarkdown, renderCompetitorMarkdown, renderRiskAnswerMarkdown
 import { createMonitoredIndustry, deleteMonitoredIndustry, getMonitoringPreferences, listAlerts, listMonitoredIndustries, markAlertRead, runMonitoredScan, unreadAlertCount, updateMonitoredIndustry, updateMonitoringPreferences } from "./monitoring";
 import { createKnowledgeAsset, createKnowledgeCollection, listKnowledge, listPortfolioViews, portfolioSnapshot, savePortfolioView, searchKnowledge, updateKnowledgeAssetTags } from "./knowledge";
 import { getGovernanceOverview, recordAuditEvent, updateRetentionPolicy } from "./governance";
+import { createComment, decideReview, getCollaborationOverview, requestReview } from "./collaboration";
 import { addExistingMember, canCreateResearch, canManageMembers, changeMemberRole, getActiveOrganization, listMembers, listOrganizations, switchOrganization, type OrganizationRole } from "./organization";
 import { answerResearchQuestion, collectPublicSources, generateMarketScan, type ResearchSource, type ScanAnalysis } from "./research";
 
@@ -20,6 +21,8 @@ const active = (user: { id: number; name?: string | null }) => getActiveOrganiza
 const researchAllowed = (role: OrganizationRole) => { if (!canCreateResearch(role)) throw new TRPCError({ code: "FORBIDDEN", message: "Your organization role is view-only." }); };
 const memberManagementAllowed = (role: OrganizationRole) => { if (!canManageMembers(role)) throw new TRPCError({ code: "FORBIDDEN", message: "Only organization owners and admins can manage members." }); };
 const governanceAllowed = memberManagementAllowed;
+const reviewLeaderAllowed = (role: OrganizationRole) => { if (!["owner", "admin", "research_lead"].includes(role)) throw new TRPCError({ code: "FORBIDDEN", message: "Only organization owners, administrators, and research leads can manage review decisions." }); };
+const collaborationTargetInput = z.object({ targetType: z.enum(["market_scan", "knowledge_asset"]), targetId: z.string().min(1).max(40) });
 const sessionFromRequest = (request: { headers: { cookie?: string; authorization?: string } }) => {
   const cookieValue = parseCookie(request.headers.cookie ?? "")[COOKIE_NAME];
   if (cookieValue) return cookieValue;
@@ -37,6 +40,12 @@ export const marketIntelRouter = router({
   governance: router({
     overview: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); governanceAllowed(current.membership.role); return getGovernanceOverview(current.organization.id); }),
     updateRetention: protectedProcedure.input(z.object({ researchRetentionDays: z.number().int().min(30).max(3_650), knowledgeRetentionDays: z.number().int().min(30).max(3_650), auditRetentionDays: z.number().int().min(365).max(3_650), legalHoldEnabled: z.boolean() })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); governanceAllowed(current.membership.role); return updateRetentionPolicy(current.organization.id, ctx.user.id, input); }),
+  }),
+  collaboration: router({
+    overview: protectedProcedure.input(collaborationTargetInput).query(async ({ ctx, input }) => { const current = await active(ctx.user); return getCollaborationOverview(current.organization.id, input); }),
+    addComment: protectedProcedure.input(collaborationTargetInput.extend({ body: z.string().trim().min(2).max(8_000), mentionedUserIds: z.array(z.number().int().positive()).max(16).optional() })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); const comment = await createComment(current.organization.id, ctx.user.id, input); await recordAuditEvent(current.organization.id, ctx.user.id, { eventType: "collaboration.comment.created", resourceType: input.targetType, resourceId: input.targetId, metadata: { mentions: comment.mentionedUserIds.length } }); return comment; }),
+    requestReview: protectedProcedure.input(collaborationTargetInput.extend({ reviewerUserId: z.number().int().positive().nullable().optional() })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); const review = await requestReview(current.organization.id, ctx.user.id, input); await recordAuditEvent(current.organization.id, ctx.user.id, { eventType: "collaboration.review.requested", resourceType: input.targetType, resourceId: input.targetId, metadata: { assignedReviewer: Boolean(input.reviewerUserId) } }); return review; }),
+    decideReview: protectedProcedure.input(collaborationTargetInput.extend({ status: z.enum(["approved", "changes_requested"]), decisionNote: z.string().trim().max(4_000) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); reviewLeaderAllowed(current.membership.role); const review = await decideReview(current.organization.id, ctx.user.id, input, current.membership.role === "owner" || current.membership.role === "admin"); await recordAuditEvent(current.organization.id, ctx.user.id, { eventType: input.status === "approved" ? "collaboration.review.approved" : "collaboration.review.changes_requested", resourceType: input.targetType, resourceId: input.targetId, metadata: { hasDecisionNote: Boolean(input.decisionNote) } }); return review; }),
   }),
   catalog: protectedProcedure.query(() => INDUSTRY_CATALOG),
   dashboard: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return dashboard(ctx.user.id, current.organization.id); }),

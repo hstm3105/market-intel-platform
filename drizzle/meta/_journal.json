@@ -57,6 +57,13 @@
       "when": 1787238347472,
       "tag": "0007_confused_kinsey_walden",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1787239788102,
+      "tag": "0008_powerful_squirrel_girl",
+      "breakpoints": true
     }
   ]
 }
