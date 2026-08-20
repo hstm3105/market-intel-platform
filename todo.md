@@ -12,9 +12,14 @@
 - [x] Apply a premium, responsive visual system with refined typography, deliberate whitespace, and accessible interactions.
 - [x] Add automated tests for ownership, research validation, and export generation.
 - [x] Verify desktop and mobile layouts and core market-intelligence workflows.
-- [ ] Save the final project checkpoint.
+- [x] Save the final project checkpoint.
 - [x] Add a private project model and connect scans to project records for project-based workspace organization.
 - [x] Render tracked industries and saved industry perspectives directly on the dashboard, with useful empty states.
 - [x] Run automated tests for protected research access and invalid market-scan requests.
 - [x] Add project-aware workspace grouping and filtering so named projects organize their connected scans.
 - [x] Exercise the authenticated scan, detail, chat, note, export, and project-filter workflows in the live preview.
+- [x] Define a report-export model that maps scan insights, competitor profiles, and source citations into PDF and PowerPoint structures.
+- [x] Implement client-side PDF generation for source-grounded market scan reports.
+- [x] Implement editable PowerPoint generation for source-grounded market scan reports.
+- [x] Add clear PDF and PowerPoint export controls to the scan-detail experience.
+- [x] Add automated export-model tests and validate PDF and PowerPoint downloads in the browser.

@@ -5,3 +5,9 @@ The authenticated FinTech scan completed successfully on 20 August 2026. The sav
 The contextual research chat accepted the question, “For a strategy team entering payments infrastructure, what should be the first 90-day priority and why?” The agent returned a source-grounded recommendation to prioritize an AI-driven risk and authorization-uplift program, with model-risk governance and human review. The response appeared in the active scan panel after completion.
 
 The research workspace shows the FinTech scan under its named project, “Fintech payments landscape,” and the scan-detail view exposes notes, markdown export actions, market landscape, and competitor-profile tabs.
+
+## Report Export Validation
+
+The FinTech scan-detail header now presents distinct **Export PDF** and **Export PowerPoint** actions beside the existing Markdown export. The PDF generation flow was initiated against the authenticated FinTech report after compilation and report-model tests completed successfully.
+
+Both browser download flows completed successfully. The application displayed **“PDF report prepared for download”** after PDF generation and **“PowerPoint report prepared for download”** after the editable deck generation. The completed reports include the scan’s synthesis, structured signals, market landscape, strategic perspective, competitor highlights, and source traceability.
