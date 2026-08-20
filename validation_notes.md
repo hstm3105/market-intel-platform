@@ -95,3 +95,9 @@ From the clear baseline, applying `#operating-model` visibly changed the library
 Local visual verification confirms the Client Delivery workspace renders the non-secret integration-readiness registry, immutable approval-snapshot control, client-template studio, and approval ledger in the consultant shell. The Governance workspace renders legal-hold-aware retention preview/execution controls with a retention-run ledger. The expanded Portfolio workspace renders mandate templates, deterministic cross-mandate signal refresh controls, evidence-run reuse actions, and existing policy controls without visual overlap.
 
 At a 375-pixel mobile breakpoint, the standalone `/mobile` companion renders a focused mobile information architecture with private unread, mandate, and escalation counters; tabbed brief, alerts, and approvals states; and readable empty-state behavior. It does not expose the desktop sidebar.
+
+## Daily Operational Workflow Activation
+
+On 20 August 2026, the authenticated FinTech market-monitoring job `hyo9isyNzS4kBtnhU9b6JD` was updated to run at `02:30 UTC` every day, which is `08:00 IST`. The job continues to call the cron-authenticated `/api/scheduled/market-monitor` handler, which resolves the monitored industry by its platform-managed task identifier before running an idempotent private refresh.
+
+A project-level retention-enforcement job, `Mq2D8zYP4VviCPFhWbKAtC`, was created at the same daily `02:30 UTC` cadence. It calls the cron-authenticated `/api/scheduled/retention-enforcement` handler, whose retention execution tests cover cron-only access, retryable failures, and legal-hold protection. The two active jobs are recorded here as the operational configuration log and can be inspected, paused, or amended through the project schedule controls.
