@@ -71,3 +71,21 @@ The post-fix production asset now includes the same selected FinTech scan and di
 The post-fix publication persisted successfully in the active private organization: the `FinTech data and risk-control operating thesis` asset stores the selected FinTech scan ID and the full direct `S1` Google News source URL in `sourceRefsJson`. The remaining check is that the refreshed library renders that persisted source as a clickable link.
 
 The refreshed published Knowledge library displays the persisted asset with one linked scan, one source reference, and an interactive `S1` anchor. This completes the end-to-end direct evidence-link validation in the active organization.
+
+## Knowledge Discovery Validation
+
+After a fresh production bundle refresh, the Knowledge workspace displays the private search-and-tag copy, tag-entry guidance, asset-type filter, and inline tag editor for the existing source-linked FinTech knowledge asset. The next checks will persist normalized tags and confirm tag and text search filtering.
+
+The published source-linked FinTech asset accepted four tag inputs, normalized them into the three distinct tags `fintech`, `operating-model`, and `client-ready`, and exposed them both on the asset card and in the active organization’s tag directory.
+
+Selecting the normalized `#fintech` directory tag changed the library to one matching private asset and retained the source-linked FinTech asset, confirming organization-scoped tag filtering works in production.
+
+With the active `#fintech` filter in place, a `risk-control` text query continued to return the same source-linked FinTech asset as one matching result. This completes the published private knowledge-discovery validation for tag editing, normalized tag filtering, and full-text asset search.
+
+For the final explicit validation pass, the published Knowledge workspace was reopened with no active tag filter: it shows one knowledge asset and three active directory tags before any search or filter is applied.
+
+Entering `risk-control` from the clean library immediately produced one matching asset while retaining the source-linked FinTech thesis. The following view will capture the persisted query field alongside that result.
+
+The published library visibly retains the `risk-control` query, reports one matching asset, and renders the expected source-linked FinTech operating thesis. This provides conclusive end-to-end text-search evidence.
+
+From the clear baseline, applying `#operating-model` visibly changed the library to its active “Filtering by” state, retained one matching source-linked FinTech asset, and preserved the private evidence card. This completes the explicit tag-filter validation.

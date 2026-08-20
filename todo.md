@@ -98,4 +98,6 @@
 - [x] Implement protected knowledge search and tag aggregation scoped to the active organization.
 - [x] Build asset search, tag editing, tag filters, and empty-result controls in the Knowledge workspace.
 - [x] Add automated coverage for tag normalization, private search isolation, and filter behavior.
-- [ ] Validate published knowledge discovery using source-linked research assets.
+- [x] Validate published knowledge discovery using source-linked research assets.
+- [x] Re-run published text-search validation and capture the visible query value with its expected source-linked result.
+- [x] Clear and apply a published tag filter while confirming the visible result-count and asset state change.
