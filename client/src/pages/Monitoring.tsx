@@ -15,13 +15,14 @@ type RiskThreshold = "all" | "high";
 
 const dateTimeLabel = (value?: Date | string | null) => value ? new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(value)) : "Not scheduled";
 const cadenceLabel = (cadence: Cadence) => cadence === "monthly" ? "Monthly · 1st at 09:00 UTC" : "Weekly · Monday at 09:00 UTC";
+const nextRunForCadence = (cadence: Cadence) => { const now = new Date(); const next = new Date(now); if (cadence === "weekly") { next.setUTCDate(next.getUTCDate() + ((8 - next.getUTCDay()) % 7)); next.setUTCHours(9, 0, 0, 0); if (next.getTime() <= now.getTime()) next.setUTCDate(next.getUTCDate() + 7); return next; } next.setUTCDate(1); next.setUTCHours(9, 0, 0, 0); if (next.getTime() <= now.getTime()) next.setUTCMonth(next.getUTCMonth() + 1); return next; };
 const severityStyle = { high: "border-[#dfb4a5] bg-[#fff1ec] text-[#97482e]", medium: "border-[#e3c993] bg-[#fff8e8] text-[#876323]", low: "border-[#bdd3c0] bg-[#eff7ef] text-[#426a4c]" } as const;
 
 export default function Monitoring() {
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const catalog = trpc.marketIntel.catalog.useQuery();
-  const monitors = trpc.marketIntel.monitoring.list.useQuery();
+  const monitorQuery = trpc.marketIntel.monitoring.list.useQuery();
   const alertData = trpc.marketIntel.monitoring.alerts.useQuery();
   const preferences = trpc.marketIntel.monitoring.preferences.useQuery();
   const [industrySlug, setIndustrySlug] = useState("");
@@ -36,6 +37,7 @@ export default function Monitoring() {
   useEffect(() => { if (preferences.data) { setInAppEnabled(preferences.data.inAppEnabled); setMinimumSeverity(preferences.data.minimumSeverity); } }, [preferences.data]);
 
   const selectedIndustry = useMemo(() => catalog.data?.find(industry => industry.slug === industrySlug), [catalog.data, industrySlug]);
+  const monitors = { ...monitorQuery, data: monitorQuery.data?.map(monitor => ({ ...monitor, nextRunAt: monitor.nextRunAt ?? nextRunForCadence(monitor.cadence) })) };
   const finishMutation = () => { void utils.marketIntel.monitoring.list.invalidate(); void utils.marketIntel.monitoring.alerts.invalidate(); void utils.marketIntel.monitoring.preferences.invalidate(); void utils.marketIntel.dashboard.invalidate(); void utils.marketIntel.tracked.invalidate(); };
   const create = trpc.marketIntel.monitoring.create.useMutation({ onSuccess: () => { finishMutation(); toast.success("Monitoring is active. The first refresh establishes your baseline."); clearForm(); }, onError: error => toast.error(error.message) });
   const update = trpc.marketIntel.monitoring.update.useMutation({ onSuccess: () => { finishMutation(); toast.success("Monitoring settings updated."); clearForm(); }, onError: error => toast.error(error.message) });
