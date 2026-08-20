@@ -53,3 +53,11 @@ The existing published FinTech watch remains authenticated, active, and schedule
 The focused published refresh completed and generated one unread, medium-severity private competitor alert linked to the new FinTech scan. The alert identifies a new Latvian specialised banking licence as a potential EU fintech competitor-pool expansion and retains the fresh source reference `S11`.
 
 The linked scan opened successfully in the authenticated workspace and displayed its full public-source research, including the source-intelligence panel. The reviewed alert then transitioned from `NEW` with one unread signal to `Reviewed` with zero unread signals in the published alert feed.
+
+## Enterprise Knowledge and Portfolio Validation
+
+After a cache-bypassed production refresh, the published Knowledge workspace loaded successfully with the new navigation entries, organization-private counters, scan selector, collection controls, and traceable-source reference area. The active organization exposes its existing private scans for evidence-linked knowledge capture.
+
+The published Knowledge workspace successfully loaded the selected FinTech scan’s twelve stored public sources and recorded a selected `S1` source reference while retaining its direct source URL. This confirms the evidence-selection control is operating against private scan data.
+
+An evidence-linked insight was prepared in the published workspace with one selected FinTech scan, source reference `S1`, an explicit strategic conclusion, and a stated diligence boundary. The next validation action publishes this asset into the active organization’s knowledge library.

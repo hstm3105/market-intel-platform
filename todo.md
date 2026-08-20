@@ -91,3 +91,6 @@
 - [x] Add automated coverage for organization-private knowledge, portfolio aggregation, and advanced-agent evidence safeguards.
 - [x] Add selectable source references and visible traceable evidence links to knowledge assets.
 - [x] Move portfolio aggregation coverage into the configured test scope and verify it executes in the full suite.
+- [x] Fix source-reference input validation so direct evidence URLs can be persisted with knowledge assets.
+- [x] Add persistence coverage for long direct source URLs in organization-private knowledge assets.
+- [ ] Re-run published knowledge asset creation after the validation fix and verify its clickable evidence link.

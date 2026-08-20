@@ -33,7 +33,8 @@ describe("marketIntel enterprise portfolio agent", () => {
 
   it("creates knowledge assets only under the caller’s active organization", async () => {
     const caller = marketIntelRouter.createCaller(context());
-    await caller.knowledge.createAsset({ kind: "insight", status: "published", title: "Signal", content: "Evidence-linked conclusion", tags: ["strategy"], scanIds: ["scan-1"], sourceRefs: ["S1"] });
-    expect(mocks.createAsset).toHaveBeenCalledWith(1, "org-private", expect.objectContaining({ title: "Signal", scanIds: ["scan-1"], sourceRefs: ["S1"] }));
+    const evidenceRef = "S1 · https://news.google.com/rss/articles/example-direct-source-link";
+    await caller.knowledge.createAsset({ kind: "insight", status: "published", title: "Signal", content: "Evidence-linked conclusion", tags: ["strategy"], scanIds: ["scan-1"], sourceRefs: [evidenceRef] });
+    expect(mocks.createAsset).toHaveBeenCalledWith(1, "org-private", expect.objectContaining({ title: "Signal", scanIds: ["scan-1"], sourceRefs: [evidenceRef] }));
   });
 });
