@@ -94,3 +94,8 @@
 - [x] Fix source-reference input validation so direct evidence URLs can be persisted with knowledge assets.
 - [x] Add persistence coverage for long direct source URLs in organization-private knowledge assets.
 - [x] Re-run published knowledge asset creation after the validation fix and verify its clickable evidence link.
+- [x] Define organization-private search queries, tag normalization, and knowledge-asset filter contracts.
+- [x] Implement protected knowledge search and tag aggregation scoped to the active organization.
+- [x] Build asset search, tag editing, tag filters, and empty-result controls in the Knowledge workspace.
+- [x] Add automated coverage for tag normalization, private search isolation, and filter behavior.
+- [ ] Validate published knowledge discovery using source-linked research assets.

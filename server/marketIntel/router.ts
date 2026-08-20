@@ -8,7 +8,7 @@ import { INDUSTRY_CATALOG, getIndustry } from "./catalog";
 import { addChatTurn, addNote, dashboard, getScan, listTrackedIndustries, listWorkspace, saveScanPackage, setTrackedIndustry } from "./db";
 import { renderBriefMarkdown, renderCompetitorMarkdown, renderRiskAnswerMarkdown } from "./markdown";
 import { createMonitoredIndustry, deleteMonitoredIndustry, getMonitoringPreferences, listAlerts, listMonitoredIndustries, markAlertRead, runMonitoredScan, unreadAlertCount, updateMonitoredIndustry, updateMonitoringPreferences } from "./monitoring";
-import { createKnowledgeAsset, createKnowledgeCollection, listKnowledge, listPortfolioViews, portfolioSnapshot, savePortfolioView } from "./knowledge";
+import { createKnowledgeAsset, createKnowledgeCollection, listKnowledge, listPortfolioViews, portfolioSnapshot, savePortfolioView, searchKnowledge, updateKnowledgeAssetTags } from "./knowledge";
 import { addExistingMember, canCreateResearch, canManageMembers, changeMemberRole, getActiveOrganization, listMembers, listOrganizations, switchOrganization, type OrganizationRole } from "./organization";
 import { answerResearchQuestion, collectPublicSources, generateMarketScan, type ResearchSource, type ScanAnalysis } from "./research";
 
@@ -49,8 +49,10 @@ export const marketIntelRouter = router({
   }),
   knowledge: router({
     list: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return listKnowledge(ctx.user.id, current.organization.id); }),
+    search: protectedProcedure.input(z.object({ query: z.string().max(160).optional(), tags: z.array(z.string().min(1).max(48)).max(12).optional(), kinds: z.array(z.enum(["insight", "brief", "decision_note"])).max(3).optional(), statuses: z.array(z.enum(["draft", "published"])).max(2).optional() }).optional()).query(async ({ ctx, input }) => { const current = await active(ctx.user); return searchKnowledge(ctx.user.id, current.organization.id, input ?? {}); }),
     createCollection: protectedProcedure.input(z.object({ name: z.string().min(2).max(160), description: z.string().max(2_000).default("") })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); return createKnowledgeCollection(ctx.user.id, current.organization.id, input); }),
     createAsset: protectedProcedure.input(z.object({ collectionId: z.string().min(1).max(40).optional(), kind: z.enum(["insight", "brief", "decision_note"]), status: z.enum(["draft", "published"]), title: z.string().min(2).max(220), content: z.string().min(1).max(20_000), tags: z.array(z.string().min(1).max(48)).max(12), scanIds: z.array(z.string().min(1).max(40)).max(12), sourceRefs: z.array(z.string().min(1).max(2_048)).max(48) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); return createKnowledgeAsset(ctx.user.id, current.organization.id, input); }),
+    updateTags: protectedProcedure.input(z.object({ id: z.string().min(1).max(40), tags: z.array(z.string().min(1).max(48)).max(12) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); return updateKnowledgeAssetTags(ctx.user.id, current.organization.id, input.id, input.tags); }),
   }),
   portfolio: router({
     summary: protectedProcedure.input(z.object({ scanIds: z.array(z.string().min(1).max(40)).max(12).refine(ids => new Set(ids).size === ids.length, "Choose distinct scans.") }).optional()).query(async ({ ctx, input }) => { const current = await active(ctx.user); return portfolioSnapshot(ctx.user.id, current.organization.id, input?.scanIds ?? []); }),

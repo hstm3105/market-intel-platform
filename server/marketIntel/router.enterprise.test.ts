@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "../_core/context";
 
-const mocks = vi.hoisted(() => ({ active: vi.fn(), snapshot: vi.fn(), listKnowledge: vi.fn(), createAsset: vi.fn(), answer: vi.fn(), saveView: vi.fn() }));
+const mocks = vi.hoisted(() => ({ active: vi.fn(), snapshot: vi.fn(), listKnowledge: vi.fn(), searchKnowledge: vi.fn(), createAsset: vi.fn(), answer: vi.fn(), saveView: vi.fn() }));
 vi.mock("./db", () => ({ addChatTurn: vi.fn(), addNote: vi.fn(), dashboard: vi.fn(), getScan: vi.fn(), listTrackedIndustries: vi.fn(), listWorkspace: vi.fn(), saveScanPackage: vi.fn(), setTrackedIndustry: vi.fn() }));
 vi.mock("./research", () => ({ answerResearchQuestion: mocks.answer, collectPublicSources: vi.fn(), generateMarketScan: vi.fn() }));
-vi.mock("./knowledge", () => ({ createKnowledgeAsset: mocks.createAsset, createKnowledgeCollection: vi.fn(), listKnowledge: mocks.listKnowledge, listPortfolioViews: vi.fn(), portfolioSnapshot: mocks.snapshot, savePortfolioView: mocks.saveView }));
+vi.mock("./knowledge", () => ({ createKnowledgeAsset: mocks.createAsset, createKnowledgeCollection: vi.fn(), listKnowledge: mocks.listKnowledge, listPortfolioViews: vi.fn(), portfolioSnapshot: mocks.snapshot, savePortfolioView: mocks.saveView, searchKnowledge: mocks.searchKnowledge, updateKnowledgeAssetTags: vi.fn() }));
 vi.mock("./monitoring", () => ({ createMonitoredIndustry: vi.fn(), deleteMonitoredIndustry: vi.fn(), getMonitoringPreferences: vi.fn(), listAlerts: vi.fn(), listMonitoredIndustries: vi.fn(), markAlertRead: vi.fn(), runMonitoredScan: vi.fn(), unreadAlertCount: vi.fn(), updateMonitoredIndustry: vi.fn(), updateMonitoringPreferences: vi.fn() }));
 vi.mock("./organization", () => ({ getActiveOrganization: mocks.active, addExistingMember: vi.fn(), switchOrganization: vi.fn(), canCreateResearch: vi.fn((role: string) => role !== "viewer"), canManageMembers: vi.fn(), changeMemberRole: vi.fn(), listMembers: vi.fn(), listOrganizations: vi.fn() }));
 
@@ -36,5 +36,11 @@ describe("marketIntel enterprise portfolio agent", () => {
     const evidenceRef = "S1 · https://news.google.com/rss/articles/example-direct-source-link";
     await caller.knowledge.createAsset({ kind: "insight", status: "published", title: "Signal", content: "Evidence-linked conclusion", tags: ["strategy"], scanIds: ["scan-1"], sourceRefs: [evidenceRef] });
     expect(mocks.createAsset).toHaveBeenCalledWith(1, "org-private", expect.objectContaining({ title: "Signal", scanIds: ["scan-1"], sourceRefs: [evidenceRef] }));
+  });
+
+  it("scopes knowledge search to the caller’s active organization before applying filters", async () => {
+    mocks.searchKnowledge.mockResolvedValue({ collections: [], assets: [], availableTags: [] });
+    await marketIntelRouter.createCaller(context()).knowledge.search({ query: "fintech", tags: ["strategy"], kinds: ["insight"] });
+    expect(mocks.searchKnowledge).toHaveBeenCalledWith(1, "org-private", { query: "fintech", tags: ["strategy"], kinds: ["insight"] });
   });
 });

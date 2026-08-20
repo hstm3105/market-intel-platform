@@ -4,6 +4,7 @@ import { knowledgeAssets, knowledgeCollections, marketScans, portfolioViews } fr
 import { getDb } from "../db";
 import { analyzeSourceIntelligence } from "../../shared/sourceIntelligence";
 import { summarizePortfolio } from "../../shared/portfolioIntelligence";
+import { filterKnowledgeAssets, normalizeTags, tagDirectory, type KnowledgeSearchFilters } from "../../shared/knowledgeDiscovery";
 import type { ResearchSource, ScanAnalysis } from "./research";
 
 const requireDb = async () => { const db = await getDb(); if (!db) throw new Error("The research database is currently unavailable."); return db; };
@@ -15,7 +16,13 @@ export async function listKnowledge(userId: number, organizationId: string) {
     db.select().from(knowledgeCollections).where(and(eq(knowledgeCollections.userId, userId), eq(knowledgeCollections.organizationId, organizationId))).orderBy(desc(knowledgeCollections.updatedAt)),
     db.select().from(knowledgeAssets).where(and(eq(knowledgeAssets.userId, userId), eq(knowledgeAssets.organizationId, organizationId))).orderBy(desc(knowledgeAssets.updatedAt)),
   ]);
-  return { collections, assets: assets.map(asset => ({ ...asset, tags: parseList(asset.tagsJson) as string[], scanIds: parseList(asset.scanIdsJson) as string[], sourceRefs: parseList(asset.sourceRefsJson) as string[] })) };
+  return { collections, assets: assets.map(asset => ({ ...asset, tags: normalizeTags(parseList(asset.tagsJson) as string[]), scanIds: parseList(asset.scanIdsJson) as string[], sourceRefs: parseList(asset.sourceRefsJson) as string[] })) };
+}
+
+export async function searchKnowledge(userId: number, organizationId: string, filters: KnowledgeSearchFilters = {}) {
+  const knowledge = await listKnowledge(userId, organizationId);
+  const assets = filterKnowledgeAssets(knowledge.assets, filters);
+  return { ...knowledge, assets, availableTags: tagDirectory(knowledge.assets) };
 }
 
 export async function createKnowledgeCollection(userId: number, organizationId: string, input: { name: string; description: string }) {
@@ -31,8 +38,17 @@ async function assertScansInOrganization(userId: number, organizationId: string,
 export async function createKnowledgeAsset(userId: number, organizationId: string, input: { collectionId?: string; kind: "insight" | "brief" | "decision_note"; status: "draft" | "published"; title: string; content: string; tags: string[]; scanIds: string[]; sourceRefs: string[] }) {
   const db = await requireDb(); await assertScansInOrganization(userId, organizationId, input.scanIds);
   if (input.collectionId) { const [collection] = await db.select({ id: knowledgeCollections.id }).from(knowledgeCollections).where(and(eq(knowledgeCollections.id, input.collectionId), eq(knowledgeCollections.userId, userId), eq(knowledgeCollections.organizationId, organizationId))).limit(1); if (!collection) throw new Error("Knowledge collection not found."); }
-  const row = { id: nanoid(), userId, organizationId, collectionId: input.collectionId ?? null, kind: input.kind, status: input.status, title: input.title.trim(), content: input.content.trim(), tagsJson: JSON.stringify(input.tags), scanIdsJson: JSON.stringify(input.scanIds), sourceRefsJson: JSON.stringify(input.sourceRefs) };
+  const row = { id: nanoid(), userId, organizationId, collectionId: input.collectionId ?? null, kind: input.kind, status: input.status, title: input.title.trim(), content: input.content.trim(), tagsJson: JSON.stringify(normalizeTags(input.tags)), scanIdsJson: JSON.stringify(input.scanIds), sourceRefsJson: JSON.stringify(input.sourceRefs) };
   await db.insert(knowledgeAssets).values(row); return row;
+}
+
+export async function updateKnowledgeAssetTags(userId: number, organizationId: string, assetId: string, tags: string[]) {
+  const db = await requireDb();
+  const [asset] = await db.select({ id: knowledgeAssets.id }).from(knowledgeAssets).where(and(eq(knowledgeAssets.id, assetId), eq(knowledgeAssets.userId, userId), eq(knowledgeAssets.organizationId, organizationId))).limit(1);
+  if (!asset) throw new Error("Knowledge asset not found.");
+  const normalizedTags = normalizeTags(tags);
+  await db.update(knowledgeAssets).set({ tagsJson: JSON.stringify(normalizedTags), updatedAt: new Date() }).where(and(eq(knowledgeAssets.id, assetId), eq(knowledgeAssets.userId, userId), eq(knowledgeAssets.organizationId, organizationId)));
+  return { id: assetId, tags: normalizedTags };
 }
 
 export async function listPortfolioViews(userId: number, organizationId: string) { const db = await requireDb(); const views = await db.select().from(portfolioViews).where(and(eq(portfolioViews.userId, userId), eq(portfolioViews.organizationId, organizationId))).orderBy(desc(portfolioViews.updatedAt)); return views.map(view => ({ ...view, scanIds: parseList(view.scanIdsJson) as string[] })); }
