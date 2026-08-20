@@ -169,5 +169,5 @@
 - [x] Build a polished Executive Briefing workspace that unifies portfolio signals, private evidence, approvals, and delivery status.
 - [x] Improve navigation hierarchy, cross-workspace empty states, interaction feedback, and mobile workflow continuity.
 - [x] Add automated coverage for executive-brief privacy, scheduling boundaries, review controls, and UI data contracts.
-- [ ] Validate and publish the executive distribution and experience-cleanup release.
-- [ ] Activate and verify the organization’s default weekly Monday 09:00 IST executive briefing job after publication.
+- [x] Validate and publish the executive distribution and experience-cleanup release.
+- [x] Activate and verify the organization’s default weekly Monday 09:00 IST executive briefing job after publication.

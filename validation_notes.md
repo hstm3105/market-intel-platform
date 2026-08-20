@@ -101,3 +101,9 @@ At a 375-pixel mobile breakpoint, the standalone `/mobile` companion renders a f
 On 20 August 2026, the authenticated FinTech market-monitoring job `hyo9isyNzS4kBtnhU9b6JD` was updated to run at `02:30 UTC` every day, which is `08:00 IST`. The job continues to call the cron-authenticated `/api/scheduled/market-monitor` handler, which resolves the monitored industry by its platform-managed task identifier before running an idempotent private refresh.
 
 A project-level retention-enforcement job, `Mq2D8zYP4VviCPFhWbKAtC`, was created at the same daily `02:30 UTC` cadence. It calls the cron-authenticated `/api/scheduled/retention-enforcement` handler, whose retention execution tests cover cron-only access, retryable failures, and legal-hold protection. The two active jobs are recorded here as the operational configuration log and can be inspected, paused, or amended through the project schedule controls.
+
+## Executive Distribution and Experience Validation
+
+The Executive Briefing workspace renders in the consultant shell with organization-private cadence controls, evidence-bounded on-demand briefing generation, approval-gated internal distribution, immutable briefing ledger cards, source appendices, and explicit uncertainty boundaries. Navigation now groups Research, Intelligence, Delivery, and Administration capabilities; the mobile companion’s approval surface includes internally distributed executive briefings alongside approved delivery snapshots.
+
+The active organization’s weekly briefing setting is enabled with the task UID `izZ5MoqfTLWi3TmmPBsSnw`. The production job calls `/api/scheduled/executive-briefing` at `03:30 UTC` every Monday, equivalent to `09:00 IST`, and is bound to the persisted organization-private briefing settings row. Automated coverage verifies cited-source filtering, private briefing retrieval, foreign-brief rejection, and the weekly cadence; the full platform suite passes with 113 tests.
