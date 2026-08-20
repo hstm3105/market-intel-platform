@@ -89,3 +89,9 @@ Entering `risk-control` from the clean library immediately produced one matching
 The published library visibly retains the `risk-control` query, reports one matching asset, and renders the expected source-linked FinTech operating thesis. This provides conclusive end-to-end text-search evidence.
 
 From the clear baseline, applying `#operating-model` visibly changed the library to its active “Filtering by” state, retained one matching source-linked FinTech asset, and preserved the private evidence card. This completes the explicit tag-filter validation.
+
+## Remaining Roadmap Expansion Validation
+
+Local visual verification confirms the Client Delivery workspace renders the non-secret integration-readiness registry, immutable approval-snapshot control, client-template studio, and approval ledger in the consultant shell. The Governance workspace renders legal-hold-aware retention preview/execution controls with a retention-run ledger. The expanded Portfolio workspace renders mandate templates, deterministic cross-mandate signal refresh controls, evidence-run reuse actions, and existing policy controls without visual overlap.
+
+At a 375-pixel mobile breakpoint, the standalone `/mobile` companion renders a focused mobile information architecture with private unread, mandate, and escalation counters; tabbed brief, alerts, and approvals states; and readable empty-state behavior. It does not expose the desktop sidebar.

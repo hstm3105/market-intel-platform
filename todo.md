@@ -145,3 +145,18 @@
 - [x] Add mandate capacity, owner-membership, and foreign-reference safeguard coverage.
 - [x] Add non-member mandate-owner rejection coverage.
 - [x] Add foreign knowledge-asset mandate-reference rejection coverage.
+- [x] Define organization-private external integration registry and client-delivery template records.
+- [x] Build secure integration configuration, connection status, and audit controls without storing provider credentials in application tables.
+- [x] Add client-delivery templates, immutable approved-export snapshots, and source-citation appendices.
+- [x] Add governance retention-run records and administrator retention-execution controls with legal-hold protection.
+- [x] Implement a project-level scheduled retention enforcement handler with idempotent organization processing.
+- [x] Add portfolio mandate templates, cross-mandate alert signals, and evidence-run reuse controls.
+- [x] Build a responsive mobile companion route for notifications, approvals, mandate health, and watchlists.
+- [x] Add automated coverage for integration privacy, delivery snapshot integrity, retention legal holds, and mobile data boundaries.
+- [ ] Validate and publish the remaining roadmap increment while documenting any live provider connection that awaits credentials.
+- [x] Add direct immutable delivery-snapshot target isolation coverage.
+- [x] Add service-level organization isolation and foreign agent-run reuse rejection coverage for operating intelligence.
+- [x] Add authenticated scheduled-retention handler verification for cron-only invocation and idempotent batch results.
+- [x] Implement integration validation lifecycle controls that can record a verified configured state and validation timestamp without accepting credentials in application storage.
+- [x] Surface a source-citation appendix from immutable client-delivery snapshots and add regression coverage for appendix content.
+- [x] Add mobile companion data-boundary coverage for organization-private notifications, mandates, watchlists, and approved delivery snapshots.

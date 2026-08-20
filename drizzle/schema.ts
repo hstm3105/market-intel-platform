@@ -175,6 +175,111 @@ export const organizationPortfolioPolicies = mysqlTable(
   table => [uniqueIndex("organization_portfolio_policies_org_unique").on(table.organizationId)]
 );
 
+export const organizationIntegrations = mysqlTable(
+  "organization_integrations",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    provider: mysqlEnum("provider", ["google_drive", "sharepoint", "salesforce", "hubspot", "slack", "teams"]).notNull(),
+    status: mysqlEnum("status", ["connection_required", "configured", "disabled"]).default("connection_required").notNull(),
+    displayName: varchar("displayName", { length: 160 }).notNull(),
+    configurationJson: longtext("configurationJson").notNull(),
+    configuredByUserId: int("configuredByUserId").notNull(),
+    lastValidatedAt: timestamp("lastValidatedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("organization_integrations_org_provider_unique").on(table.organizationId, table.provider), index("organization_integrations_org_status_idx").on(table.organizationId, table.status, table.updatedAt)]
+);
+
+export const clientDeliveryTemplates = mysqlTable(
+  "client_delivery_templates",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    createdByUserId: int("createdByUserId").notNull(),
+    name: varchar("name", { length: 160 }).notNull(),
+    clientLabel: varchar("clientLabel", { length: 180 }).notNull(),
+    templateKind: mysqlEnum("templateKind", ["executive_brief", "board_deck", "client_update"]).notNull(),
+    brandName: varchar("brandName", { length: 180 }).notNull(),
+    accentColor: varchar("accentColor", { length: 16 }).notNull(),
+    executiveIntro: longtext("executiveIntro").notNull(),
+    includeCitationAppendix: boolean("includeCitationAppendix").default(true).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("client_delivery_templates_org_name_unique").on(table.organizationId, table.name), index("client_delivery_templates_org_updated_idx").on(table.organizationId, table.updatedAt)]
+);
+
+export const clientDeliverySnapshots = mysqlTable(
+  "client_delivery_snapshots",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    templateId: varchar("templateId", { length: 32 }),
+    targetType: mysqlEnum("targetType", ["market_scan", "portfolio_mandate", "agent_run"]).notNull(),
+    targetId: varchar("targetId", { length: 32 }).notNull(),
+    outputFormat: mysqlEnum("outputFormat", ["pdf", "pptx", "markdown"]).notNull(),
+    contentDigest: varchar("contentDigest", { length: 128 }).notNull(),
+    contentJson: longtext("contentJson").notNull(),
+    citationsJson: longtext("citationsJson").notNull(),
+    approvedByUserId: int("approvedByUserId").notNull(),
+    approvedAt: timestamp("approvedAt").defaultNow().notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("client_delivery_snapshots_org_target_idx").on(table.organizationId, table.targetType, table.targetId, table.createdAt), index("client_delivery_snapshots_org_approved_idx").on(table.organizationId, table.approvedByUserId, table.approvedAt)]
+);
+
+export const organizationRetentionRuns = mysqlTable(
+  "organization_retention_runs",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    initiatedByUserId: int("initiatedByUserId").notNull(),
+    action: mysqlEnum("action", ["preview", "execute", "scheduled_execute"]).notNull(),
+    status: mysqlEnum("status", ["completed", "legal_hold_skipped", "failed"]).notNull(),
+    researchAffected: int("researchAffected").default(0).notNull(),
+    knowledgeAffected: int("knowledgeAffected").default(0).notNull(),
+    auditAffected: int("auditAffected").default(0).notNull(),
+    outcomesJson: longtext("outcomesJson").notNull(),
+    completedAt: timestamp("completedAt").defaultNow().notNull(),
+  },
+  table => [index("organization_retention_runs_org_completed_idx").on(table.organizationId, table.completedAt), index("organization_retention_runs_org_status_idx").on(table.organizationId, table.status, table.completedAt)]
+);
+
+export const portfolioMandateTemplates = mysqlTable(
+  "portfolio_mandate_templates",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    createdByUserId: int("createdByUserId").notNull(),
+    name: varchar("name", { length: 160 }).notNull(),
+    description: longtext("description").notNull(),
+    defaultPriority: mysqlEnum("defaultPriority", ["low", "standard", "high", "critical"]).default("standard").notNull(),
+    defaultTargetDays: int("defaultTargetDays").default(30).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("portfolio_mandate_templates_org_name_unique").on(table.organizationId, table.name), index("portfolio_mandate_templates_org_updated_idx").on(table.organizationId, table.updatedAt)]
+);
+
+export const portfolioSignalAlerts = mysqlTable(
+  "portfolio_signal_alerts",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    mandateId: varchar("mandateId", { length: 32 }),
+    alertType: mysqlEnum("alertType", ["cross_mandate_risk", "evidence_conflict", "watchlist_escalation"]).notNull(),
+    status: mysqlEnum("status", ["unread", "reviewed", "resolved"]).default("unread").notNull(),
+    title: varchar("title", { length: 240 }).notNull(),
+    summary: longtext("summary").notNull(),
+    resourceIdsJson: longtext("resourceIdsJson").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [index("portfolio_signal_alerts_org_status_idx").on(table.organizationId, table.status, table.createdAt), index("portfolio_signal_alerts_org_mandate_idx").on(table.organizationId, table.mandateId, table.createdAt)]
+);
+
 export const researchAgentRuns = mysqlTable(
   "research_agent_runs",
   {

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ getDb: vi.fn(), insert: vi.fn(), values: vi.fn(), onDuplicateKeyUpdate: vi.fn(), select: vi.fn(), from: vi.fn(), where: vi.fn(), orderBy: vi.fn(), limit: vi.fn() }));
 vi.mock("../db", () => ({ getDb: mocks.getDb }));
 
-import { listAuditEvents, recordAuditEvent, updateRetentionPolicy } from "./governance";
+import { listAuditEvents, recordAuditEvent, runRetention, updateRetentionPolicy } from "./governance";
 
 describe("governance audit persistence", () => {
   beforeEach(() => {
@@ -41,5 +41,14 @@ describe("governance audit persistence", () => {
     expect(mocks.onDuplicateKeyUpdate).toHaveBeenCalledWith(expect.objectContaining({ set: expect.objectContaining({ updatedByUserId: 7, auditRetentionDays: 1095, legalHoldEnabled: true }) }));
     expect(mocks.values).toHaveBeenCalledWith(expect.objectContaining({ eventType: "governance.retention_policy.updated", resourceType: "retention_policy", organizationId: "org-private" }));
     expect(policy).toEqual(persisted);
+  });
+
+  it("records a legal-hold skipped retention run without querying or deleting eligible records", async () => {
+    mocks.limit.mockResolvedValue([{ id: "policy-hold", organizationId: "org-private", researchRetentionDays: 365, knowledgeRetentionDays: 730, auditRetentionDays: 1095, legalHoldEnabled: true, updatedByUserId: 7, createdAt: new Date(), updatedAt: new Date() }]);
+    const result = await runRetention("org-private", 7, "execute");
+    expect(result).toEqual(expect.objectContaining({ organizationId: "org-private", action: "execute", status: "legal_hold_skipped" }));
+    expect(mocks.values).toHaveBeenCalledWith(expect.objectContaining({ organizationId: "org-private", initiatedByUserId: 7, action: "execute", status: "legal_hold_skipped", researchAffected: 0, knowledgeAffected: 0, auditAffected: 0 }));
+    expect(mocks.values).toHaveBeenCalledWith(expect.objectContaining({ organizationId: "org-private", eventType: "governance.retention.legal_hold_skipped", resourceType: "retention_run" }));
+    expect(mocks.select).toHaveBeenCalledTimes(1);
   });
 });

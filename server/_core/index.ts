@@ -9,6 +9,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { marketMonitorHandler } from "../marketIntel/monitoringHandler";
+import { retentionHandler } from "../marketIntel/retentionHandler";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -38,6 +39,7 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   app.post("/api/scheduled/market-monitor", marketMonitorHandler);
+  app.post("/api/scheduled/retention-enforcement", retentionHandler);
   // tRPC API
   app.use(
     "/api/trpc",

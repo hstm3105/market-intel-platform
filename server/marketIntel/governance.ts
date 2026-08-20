@@ -1,6 +1,6 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { organizationAuditEvents, organizationRetentionPolicies } from "../../drizzle/schema";
+import { knowledgeAssets, marketScans, organizationAuditEvents, organizationRetentionPolicies, organizationRetentionRuns, organizations } from "../../drizzle/schema";
 import { getDb } from "../db";
 
 const requireDb = async () => { const db = await getDb(); if (!db) throw new Error("The governance database is currently unavailable."); return db; };
@@ -41,6 +41,39 @@ export async function updateRetentionPolicy(organizationId: string, actorUserId:
 }
 
 export async function getGovernanceOverview(organizationId: string) {
-  const [policy, events] = await Promise.all([getRetentionPolicy(organizationId), listAuditEvents(organizationId, 75)]);
-  return { policy, events };
+  const [policy, events, runs] = await Promise.all([getRetentionPolicy(organizationId), listAuditEvents(organizationId, 75), listRetentionRuns(organizationId)]);
+  return { policy, events, runs };
+}
+
+export async function listRetentionRuns(organizationId: string) {
+  const db = await requireDb(); const runs = await db.select().from(organizationRetentionRuns).where(eq(organizationRetentionRuns.organizationId, organizationId)).orderBy(desc(organizationRetentionRuns.completedAt)).limit(30);
+  return runs.filter(run => run.organizationId === organizationId).map(run => ({ ...run, outcomes: parseMetadata(run.outcomesJson) }));
+}
+
+type RetentionAction = "preview" | "execute" | "scheduled_execute";
+export async function runRetention(organizationId: string, initiatedByUserId: number, action: RetentionAction = "preview") {
+  const db = await requireDb(); const policy = await getRetentionPolicy(organizationId); const now = new Date();
+  const base = { id: nanoid(), organizationId, initiatedByUserId, action, researchAffected: 0, knowledgeAffected: 0, auditAffected: 0 };
+  if (policy.legalHoldEnabled) {
+    const outcomes = { legalHold: true, message: "No retention action ran because the organization is under legal hold." }; await db.insert(organizationRetentionRuns).values({ ...base, status: "legal_hold_skipped", outcomesJson: JSON.stringify(outcomes) }); await recordAuditEvent(organizationId, initiatedByUserId, { eventType: "governance.retention.legal_hold_skipped", resourceType: "retention_run", resourceId: base.id, metadata: { action } }); return { ...base, status: "legal_hold_skipped" as const, outcomes };
+  }
+  const researchBefore = new Date(now); researchBefore.setUTCDate(researchBefore.getUTCDate() - policy.researchRetentionDays); const knowledgeBefore = new Date(now); knowledgeBefore.setUTCDate(knowledgeBefore.getUTCDate() - policy.knowledgeRetentionDays); const auditBefore = new Date(now); auditBefore.setUTCDate(auditBefore.getUTCDate() - policy.auditRetentionDays);
+  const [research, knowledge, audits] = await Promise.all([
+    db.select({ id: marketScans.id }).from(marketScans).where(and(eq(marketScans.organizationId, organizationId), lt(marketScans.createdAt, researchBefore))),
+    db.select({ id: knowledgeAssets.id }).from(knowledgeAssets).where(and(eq(knowledgeAssets.organizationId, organizationId), lt(knowledgeAssets.updatedAt, knowledgeBefore))),
+    db.select({ id: organizationAuditEvents.id }).from(organizationAuditEvents).where(and(eq(organizationAuditEvents.organizationId, organizationId), lt(organizationAuditEvents.createdAt, auditBefore))),
+  ]);
+  const outcomes = { legalHold: false, mode: action, cutoffs: { researchBefore: researchBefore.toISOString(), knowledgeBefore: knowledgeBefore.toISOString(), auditBefore: auditBefore.toISOString() }, affected: { research: research.length, knowledge: knowledge.length, audit: audits.length } };
+  if (action !== "preview") await Promise.all([
+    research.length ? db.delete(marketScans).where(and(eq(marketScans.organizationId, organizationId), lt(marketScans.createdAt, researchBefore))) : Promise.resolve(),
+    knowledge.length ? db.delete(knowledgeAssets).where(and(eq(knowledgeAssets.organizationId, organizationId), lt(knowledgeAssets.updatedAt, knowledgeBefore))) : Promise.resolve(),
+    audits.length ? db.delete(organizationAuditEvents).where(and(eq(organizationAuditEvents.organizationId, organizationId), lt(organizationAuditEvents.createdAt, auditBefore))) : Promise.resolve(),
+  ]);
+  await db.insert(organizationRetentionRuns).values({ ...base, status: "completed", researchAffected: research.length, knowledgeAffected: knowledge.length, auditAffected: audits.length, outcomesJson: JSON.stringify(outcomes) }); await recordAuditEvent(organizationId, initiatedByUserId, { eventType: action === "preview" ? "governance.retention.previewed" : "governance.retention.executed", resourceType: "retention_run", resourceId: base.id, metadata: { researchAffected: research.length, knowledgeAffected: knowledge.length, auditAffected: audits.length } }); return { ...base, status: "completed" as const, outcomes };
+}
+
+export async function runScheduledRetentionBatch() {
+  const db = await requireDb(); const rows = await db.select({ id: organizations.id }).from(organizations); const results = [] as Array<{ organizationId: string; status: string }>;
+  for (const organization of rows) { try { const run = await runRetention(organization.id, 0, "scheduled_execute"); results.push({ organizationId: organization.id, status: run.status }); } catch { results.push({ organizationId: organization.id, status: "failed" }); } }
+  return results;
 }
