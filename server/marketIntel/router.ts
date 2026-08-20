@@ -11,6 +11,7 @@ import { createMonitoredIndustry, deleteMonitoredIndustry, getMonitoringPreferen
 import { createKnowledgeAsset, createKnowledgeCollection, listKnowledge, listPortfolioViews, portfolioSnapshot, savePortfolioView, searchKnowledge, updateKnowledgeAssetTags } from "./knowledge";
 import { getGovernanceOverview, recordAuditEvent, updateRetentionPolicy } from "./governance";
 import { createComment, decideReview, getCollaborationOverview, listNotifications, markNotificationRead, requestReview } from "./collaboration";
+import { listAgentRuns, runEvidenceOrchestration } from "./orchestration";
 import { addExistingMember, canCreateResearch, canManageMembers, changeMemberRole, getActiveOrganization, listMembers, listOrganizations, switchOrganization, type OrganizationRole } from "./organization";
 import { answerResearchQuestion, collectPublicSources, generateMarketScan, type ResearchSource, type ScanAnalysis } from "./research";
 
@@ -84,6 +85,17 @@ export const marketIntelRouter = router({
       const answer = await answerResearchQuestion({ question: input.question, scanContext: JSON.stringify(packet), history: [], focus: "enterprise_portfolio" });
       await recordAuditEvent(current.organization.id, ctx.user.id, { eventType: "portfolio.synthesis.generated", resourceType: "portfolio_synthesis", metadata: { scans: input.scanIds.length, knowledgeAssets: input.knowledgeAssetIds.length } });
       return { answer, metrics: portfolio.metrics, evaluatedScans: portfolio.scans.map(scan => ({ scanId: scan.id, industry: scan.industryName })) };
+    }),
+  }),
+  agents: router({
+    listRuns: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return listAgentRuns(current.organization.id); }),
+    runEvidence: protectedProcedure.input(z.object({ scanIds: z.array(z.string().min(1).max(40)).min(1).max(6).refine(ids => new Set(ids).size === ids.length, "Choose distinct scans."), question: z.string().min(12).max(2_000) })).mutation(async ({ ctx, input }) => {
+      const current = await active(ctx.user); researchAllowed(current.membership.role);
+      const records = await Promise.all(input.scanIds.map(scanId => getScan(ctx.user.id, current.organization.id, scanId)));
+      if (records.some(record => !record)) throw new TRPCError({ code: "NOT_FOUND", message: "One or more selected research scans are outside the active organization." });
+      const agentRun = await runEvidenceOrchestration({ organizationId: current.organization.id, requestedByUserId: ctx.user.id, question: input.question, scans: records.map(record => { const { sources, analysis } = parseStoredScan(record!.scan.sourceJson, record!.scan.analysisJson); return { id: record!.scan.id, industryName: record!.scan.industryName, scope: record!.scan.scope, sources, analysis }; }) });
+      await recordAuditEvent(current.organization.id, ctx.user.id, { eventType: "research.agent_run.completed", resourceType: "research_agent_run", resourceId: agentRun.id, metadata: { scans: input.scanIds.length, claims: agentRun.claims.length, model: agentRun.model } });
+      return agentRun;
     }),
   }),
   workspace: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return listWorkspace(ctx.user.id, current.organization.id); }),

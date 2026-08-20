@@ -126,8 +126,10 @@
 - [x] Validate and publish the collaboration completion increment.
 - [x] Add overdue and due-soon urgency states for active collaboration reviews.
 - [x] Add notification inbox error and retry handling in the Collaboration workspace.
-- [ ] Define advanced source-evidence graph, claim-level confidence, and multi-agent research-run data models.
-- [ ] Implement evidence-bounded agent orchestration with source triangulation, conflict detection, and reusable research runs.
-- [ ] Build advanced source intelligence and agent-run controls for consultants.
-- [ ] Add automated coverage for source-evidence isolation, agent-run integrity, and cross-scan orchestration boundaries.
-- [ ] Validate and publish advanced source intelligence and agent orchestration.
+- [x] Define advanced source-evidence graph, claim-level confidence, and multi-agent research-run data models.
+- [x] Implement evidence-bounded agent orchestration with source triangulation, conflict detection, and reusable research runs.
+- [x] Build advanced source intelligence and agent-run controls for consultants.
+- [x] Add automated coverage for source-evidence isolation, agent-run integrity, and cross-scan orchestration boundaries.
+- [x] Validate and publish advanced source intelligence and agent orchestration.
+- [x] Add service-level persistence coverage for successful agent runs and claim records.
+- [x] Add mixed-organization retrieval coverage for agent-run and evidence-claim grouping boundaries.

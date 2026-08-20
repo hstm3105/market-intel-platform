@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { BellRing, BookOpenCheck, BookOpenText, Building2, FolderOpen, GitCompareArrows, LayoutDashboard, Lock, LogOut, MessagesSquare, PanelLeft, Plus, Search, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
+import { BellRing, BookOpenCheck, BookOpenText, Bot, Building2, FolderOpen, GitCompareArrows, LayoutDashboard, Lock, LogOut, MessagesSquare, PanelLeft, Plus, Search, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
 import { useLocation } from "wouter";
 
 const menuItems = [
@@ -19,6 +19,7 @@ const menuItems = [
   { icon: Waypoints, label: "Portfolio", path: "/portfolio" },
   { icon: Building2, label: "Organization", path: "/organization" },
   { icon: MessagesSquare, label: "Collaboration", path: "/collaboration" },
+  { icon: Bot, label: "Evidence agents", path: "/agents" },
   { icon: Lock, label: "Governance", path: "/governance" },
 ];
 

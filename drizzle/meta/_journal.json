@@ -71,6 +71,13 @@
       "when": 1787240879032,
       "tag": "0009_crazy_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1787241292113,
+      "tag": "0010_wealthy_glorian",
+      "breakpoints": true
     }
   ]
 }

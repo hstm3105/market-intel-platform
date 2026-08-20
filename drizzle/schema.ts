@@ -121,6 +121,40 @@ export const portfolioViews = mysqlTable(
   table => [uniqueIndex("portfolio_views_org_name_unique").on(table.organizationId, table.name), index("portfolio_views_org_updated_idx").on(table.organizationId, table.updatedAt)]
 );
 
+export const researchAgentRuns = mysqlTable(
+  "research_agent_runs",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    requestedByUserId: int("requestedByUserId").notNull(),
+    scanIdsJson: longtext("scanIdsJson").notNull(),
+    question: longtext("question").notNull(),
+    model: varchar("model", { length: 96 }).notNull(),
+    status: mysqlEnum("status", ["completed", "failed"]).notNull(),
+    synthesis: longtext("synthesis").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("research_agent_runs_org_created_idx").on(table.organizationId, table.createdAt), index("research_agent_runs_org_requester_idx").on(table.organizationId, table.requestedByUserId, table.createdAt)]
+);
+
+export const sourceEvidenceClaims = mysqlTable(
+  "source_evidence_claims",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    agentRunId: varchar("agentRunId", { length: 32 }).notNull(),
+    scanId: varchar("scanId", { length: 32 }).notNull(),
+    claim: longtext("claim").notNull(),
+    assessment: mysqlEnum("assessment", ["corroborated", "supported", "conflicted", "insufficient"]).notNull(),
+    confidence: int("confidence").notNull(),
+    sourceIdsJson: longtext("sourceIdsJson").notNull(),
+    counterSourceIdsJson: longtext("counterSourceIdsJson").notNull(),
+    rationale: longtext("rationale").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("source_evidence_claims_org_run_idx").on(table.organizationId, table.agentRunId, table.createdAt), index("source_evidence_claims_org_scan_idx").on(table.organizationId, table.scanId, table.createdAt), index("source_evidence_claims_org_assessment_idx").on(table.organizationId, table.assessment, table.createdAt)]
+);
+
 export const marketScans = mysqlTable(
   "market_scans",
   {
