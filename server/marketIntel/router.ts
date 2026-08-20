@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
-import { renderBriefMarkdown, renderCompetitorMarkdown } from "./markdown";
+import { renderBriefMarkdown, renderCompetitorMarkdown, renderRiskAnswerMarkdown } from "./markdown";
 import { channelForQuestionMode, selectConversationHistory } from "./chat";
 import { INDUSTRY_CATALOG, getIndustry } from "./catalog";
 import { addChatTurn, addNote, dashboard, getScan, listTrackedIndustries, listWorkspace, saveScanPackage, setTrackedIndustry } from "./db";
@@ -66,5 +66,34 @@ export const marketIntelRouter = router({
     if (!result) throw new TRPCError({ code: "NOT_FOUND", message: "This private research scan could not be found." });
     const { sources, analysis } = parseStoredScan(result.scan.sourceJson, result.scan.analysisJson);
     return { filename: `${input.competitorName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-competitor-profile.md`, content: renderCompetitorMarkdown(input.competitorName, analysis, sources) };
+  }),
+  exportRiskAnswer: protectedProcedure.input(z.object({ scanId: z.string().min(1).max(40), messageId: z.string().min(1).max(40) })).query(async ({ ctx, input }) => {
+    const result = await getScan(ctx.user.id, input.scanId);
+    if (!result) throw new TRPCError({ code: "NOT_FOUND", message: "This private research scan could not be found." });
+    const answer = result.messages.find(message => message.id === input.messageId && message.channel === "risk" && message.role === "assistant");
+    if (!answer) throw new TRPCError({ code: "NOT_FOUND", message: "This private Risk Q&A answer could not be found." });
+    const { sources } = parseStoredScan(result.scan.sourceJson, result.scan.analysisJson);
+    return { filename: `${result.scan.industrySlug}-risk-qa-brief.md`, content: renderRiskAnswerMarkdown(result.scan, answer.content, sources) };
+  }),
+  compareRisks: protectedProcedure.input(z.object({
+    scanIds: z.array(z.string().min(1).max(40)).min(2).max(6).refine(ids => new Set(ids).size === ids.length, "Choose distinct scans to compare."),
+    question: z.string().min(12).max(1_500),
+  })).mutation(async ({ ctx, input }) => {
+    const results = await Promise.all(input.scanIds.map(scanId => getScan(ctx.user.id, scanId)));
+    if (results.some(result => !result)) throw new TRPCError({ code: "NOT_FOUND", message: "One or more selected private scans could not be found." });
+    const comparisonPacket = results.map(result => {
+      const record = result!;
+      const { sources, analysis } = parseStoredScan(record.scan.sourceJson, record.scan.analysisJson);
+      const emergingRisks = analysis.emergingRisks?.length ? analysis.emergingRisks.slice(0, 3) : analysis.risks.slice(0, 3).map((risk, index) => ({ rank: index + 1, title: risk.title, summary: risk.detail, severity: `${risk.likelihood} likelihood / ${risk.impact} impact`, watchSignal: "Monitor the supporting market evidence.", sourceIds: risk.sourceIds }));
+      return {
+        scanId: record.scan.id,
+        industry: record.scan.industryName,
+        scope: record.scan.scope,
+        emergingRisks,
+        sources: sources.map(source => ({ id: source.id, title: source.title, publisher: source.publisher, url: source.url })),
+      };
+    });
+    const answer = await answerResearchQuestion({ question: input.question, scanContext: JSON.stringify({ comparisonPacket }), history: [], focus: "risk_comparison" });
+    return { answer, comparedScans: comparisonPacket.map(scan => ({ scanId: scan.scanId, industry: scan.industry })) };
   }),
 });

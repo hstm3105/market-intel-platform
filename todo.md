@@ -37,3 +37,10 @@
 - [x] Add router-level automated coverage for risk-mode history filtering and channel-separated persistence.
 - [x] Submit and reload a live Risk Q&A response to verify channel-separated conversation persistence.
 - [x] Add a router-caller test proving risk-mode questions use only risk history and persist turns to the risk channel.
+- [x] Add one-click markdown export for individual Risk Q&A briefs with source citations.
+- [x] Add a one-click control that pins a Risk Q&A answer into the private research notes workspace.
+- [x] Add a private multi-scan risk comparison workflow that synthesizes selected scan risk summaries and source context.
+- [x] Add automated coverage and live validation for risk exports, pinning, and cross-scan comparison privacy.
+- [x] Add protected-router coverage for risk-answer export filename, content, and source traceability.
+- [x] Add protected-router coverage for pinning a Risk Q&A answer into the active private scan notes.
+- [x] Add an authenticated router-caller test that saves a Risk Q&A answer payload into the active private scan notes.

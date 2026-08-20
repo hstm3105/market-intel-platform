@@ -9,8 +9,9 @@ import IndustryPreferences from "./pages/IndustryPreferences";
 import NewResearch from "./pages/NewResearch";
 import NotFound from "./pages/NotFound";
 import ScanDetail from "./pages/ScanDetail";
+import RiskComparison from "./pages/RiskComparison";
 import Workspace from "./pages/Workspace";
 
-function Router() { return <DashboardLayout><Switch><Route path="/" component={Home} /><Route path="/new" component={NewResearch} /><Route path="/industries" component={IndustryPreferences} /><Route path="/workspace" component={Workspace} /><Route path="/workspace/:scanId" component={ScanDetail} /><Route path="/404" component={NotFound} /><Route component={NotFound} /></Switch></DashboardLayout>; }
+function Router() { return <DashboardLayout><Switch><Route path="/" component={Home} /><Route path="/new" component={NewResearch} /><Route path="/industries" component={IndustryPreferences} /><Route path="/workspace" component={Workspace} /><Route path="/workspace/:scanId" component={ScanDetail} /><Route path="/risk-comparison" component={RiskComparison} /><Route path="/404" component={NotFound} /><Route component={NotFound} /></Switch></DashboardLayout>; }
 function App() { return <ErrorBoundary><ThemeProvider defaultTheme="light"><TooltipProvider><Toaster /><Router /></TooltipProvider></ThemeProvider></ErrorBoundary>; }
 export default App;

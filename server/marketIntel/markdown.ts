@@ -13,3 +13,7 @@ export function renderCompetitorMarkdown(name: string, analysis: ScanAnalysis, s
   if (!competitor) throw new Error("Competitor profile not found in this scan.");
   return `# ${competitor.name} — Competitor Profile\n\n## Positioning\n\n**Segment:** ${competitor.segment}\n\n${competitor.positioning}\n\n## Business model\n\n${competitor.businessModel}\n\n## Strengths\n\n${bullets(competitor.strengths)}\n\n## Weaknesses / watchouts\n\n${bullets(competitor.weaknesses)}\n\n## Recent moves\n\n${bullets(competitor.recentMoves)}\n\n## Strategic signals\n\n${bullets(competitor.strategicSignals)}\n\n## Scan sources\n\n${sources.map(source => `- [${source.id}] [${source.title}](${source.url}) — ${source.publisher}`).join("\n")}\n`;
 }
+
+export function renderRiskAnswerMarkdown(scan: MarketScan, answer: string, sources: ResearchSource[]) {
+  return `# ${scan.industryName} — Risk Q&A Brief\n\n*Prepared ${scan.createdAt.toLocaleDateString()}${scan.projectName ? ` for ${scan.projectName}` : ""}*\n\n## Risk question response\n\n${answer}\n\n## Scan sources\n\n${sources.map(source => `- [${source.id}] [${source.title}](${source.url}) — ${source.publisher}${source.publishedAt ? `, ${source.publishedAt}` : ""}`).join("\n")}\n`;
+}

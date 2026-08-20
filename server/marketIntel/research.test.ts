@@ -13,4 +13,12 @@ describe("risk-focused research question prompt", () => {
   it("keeps general market questions free from the risk-specific instruction", () => {
     expect(researchQuestionSystemPrompt("market")).not.toContain("three ranked risks");
   });
+
+  it("sets comparison instructions for cross-scan emerging-risk analysis", () => {
+    const prompt = researchQuestionSystemPrompt("risk_comparison");
+
+    expect(prompt).toContain("multiple private market scans");
+    expect(prompt).toContain("contagion paths");
+    expect(prompt).toContain("relevant scan industry");
+  });
 });

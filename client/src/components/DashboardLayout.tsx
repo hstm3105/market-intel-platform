@@ -4,13 +4,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { BookOpenText, FolderOpen, LayoutDashboard, LogOut, PanelLeft, Plus, Search, Sparkles } from "lucide-react";
+import { BookOpenText, FolderOpen, GitCompareArrows, LayoutDashboard, LogOut, PanelLeft, Plus, Search, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/" },
   { icon: Search, label: "New research", path: "/new" },
   { icon: FolderOpen, label: "Workspace", path: "/workspace" },
+  { icon: GitCompareArrows, label: "Compare risks", path: "/risk-comparison" },
   { icon: BookOpenText, label: "Tracked industries", path: "/industries" },
 ];
 

@@ -19,3 +19,13 @@ The FinTech scan now renders a dedicated **Risk Q&A** panel underneath the ranke
 The Risk Q&A response completed successfully with a source-grounded assessment of factors that could worsen the funding-discipline risk, explicit evidence versus inference, uncertainty statements, decision-relevant implications, and citations including [S4], [S8], [S7], [S6], [S1], and [S11].
 
 Reloading the FinTech scan restored the submitted question and its Risk Q&A response in the dedicated panel, confirming that the conversation persists independently from the general scan-chat channel.
+
+## Cross-scan Risk Comparison Validation
+
+The private comparison workspace loaded with the Consumer and FinTech scans available for selection. Both records were selected, and the default cross-industry exposure prompt was submitted for a source-grounded comparison of their saved emerging-risk summaries.
+
+The comparison completed successfully using only the selected Consumer and FinTech scans. It surfaced cross-industry legal/data-liability exposure, capital-discipline execution risk, AI platform concentration, sector-specific differences, contagion paths, and priority watch signals, with evidence and inference explicitly labeled and source labels retained.
+
+The FinTech scan detail now shows **Export answer** and **Pin to notes** controls directly above the persisted Risk Q&A conversation.
+
+The Risk Q&A brief export completed successfully and displayed the confirmation **“Risk Q&A brief prepared for download.”** The same answer was pinned successfully to the FinTech scan notes, confirmed by the private-workspace notification **“Note saved to this research workspace.”**

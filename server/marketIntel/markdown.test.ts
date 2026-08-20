@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { renderBriefMarkdown, renderCompetitorMarkdown } from "./markdown";
+import { renderBriefMarkdown, renderCompetitorMarkdown, renderRiskAnswerMarkdown } from "./markdown";
 
 const analysis = {
   executiveSummary: "A concise market read.", keyPlayers: [], trends: [], risks: [], opportunities: [],
@@ -24,6 +24,18 @@ describe("renderBriefMarkdown", () => {
     }, analysis, [{ id: "S1", title: "Source", publisher: "Publisher", publishedAt: "", url: "https://example.com", excerpt: "" }]);
     expect(markdown).toContain("# SaaS — Industry Perspective");
     expect(markdown).toContain("## Sources");
+    expect(markdown).toContain("[S1] [Source](https://example.com)");
+  });
+});
+
+describe("renderRiskAnswerMarkdown", () => {
+  it("creates a shareable Risk Q&A brief with a traceable source section", () => {
+    const markdown = renderRiskAnswerMarkdown({
+      id: "scan-1", userId: 1, industrySlug: "saas", industryName: "SaaS", projectName: "Growth strategy", scope: "Growth strategy", status: "ready", executiveSummary: "A concise market read.", sourceJson: "[]", analysisJson: "{}", createdAt: new Date("2026-08-20"), updatedAt: new Date("2026-08-20"),
+    }, "**Evidence:** Funding conditions are tightening. [S1]", [{ id: "S1", title: "Source", publisher: "Publisher", publishedAt: "", url: "https://example.com", excerpt: "" }]);
+    expect(markdown).toContain("# SaaS — Risk Q&A Brief");
+    expect(markdown).toContain("Funding conditions are tightening");
+    expect(markdown).toContain("## Scan sources");
     expect(markdown).toContain("[S1] [Source](https://example.com)");
   });
 });
