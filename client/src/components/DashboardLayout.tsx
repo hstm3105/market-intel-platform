@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { BellRing, BookOpenText, Building2, FolderOpen, GitCompareArrows, LayoutDashboard, LogOut, PanelLeft, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { BellRing, BookOpenCheck, BookOpenText, Building2, FolderOpen, GitCompareArrows, LayoutDashboard, LogOut, PanelLeft, Plus, Search, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
 import { useLocation } from "wouter";
 
 const menuItems = [
@@ -15,6 +15,8 @@ const menuItems = [
   { icon: BookOpenText, label: "Tracked industries", path: "/industries" },
   { icon: BellRing, label: "Monitoring", path: "/monitoring" },
   { icon: ShieldCheck, label: "Source intelligence", path: "/source-intelligence" },
+  { icon: BookOpenCheck, label: "Knowledge", path: "/knowledge" },
+  { icon: Waypoints, label: "Portfolio", path: "/portfolio" },
   { icon: Building2, label: "Organization", path: "/organization" },
 ];
 

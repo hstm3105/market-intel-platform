@@ -73,6 +73,54 @@ export const researchProjects = mysqlTable(
   ]
 );
 
+export const knowledgeCollections = mysqlTable(
+  "knowledge_collections",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    userId: int("userId").notNull(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    name: varchar("name", { length: 160 }).notNull(),
+    description: longtext("description").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("knowledge_collections_org_name_unique").on(table.organizationId, table.name), index("knowledge_collections_org_updated_idx").on(table.organizationId, table.updatedAt)]
+);
+
+export const knowledgeAssets = mysqlTable(
+  "knowledge_assets",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    userId: int("userId").notNull(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    collectionId: varchar("collectionId", { length: 32 }),
+    kind: mysqlEnum("kind", ["insight", "brief", "decision_note"]).notNull(),
+    status: mysqlEnum("status", ["draft", "published"]).default("draft").notNull(),
+    title: varchar("title", { length: 220 }).notNull(),
+    content: longtext("content").notNull(),
+    tagsJson: longtext("tagsJson").notNull(),
+    scanIdsJson: longtext("scanIdsJson").notNull(),
+    sourceRefsJson: longtext("sourceRefsJson").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [index("knowledge_assets_org_updated_idx").on(table.organizationId, table.updatedAt), index("knowledge_assets_collection_idx").on(table.collectionId, table.updatedAt), index("knowledge_assets_org_status_idx").on(table.organizationId, table.status)]
+);
+
+export const portfolioViews = mysqlTable(
+  "portfolio_views",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    userId: int("userId").notNull(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    name: varchar("name", { length: 160 }).notNull(),
+    scanIdsJson: longtext("scanIdsJson").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("portfolio_views_org_name_unique").on(table.organizationId, table.name), index("portfolio_views_org_updated_idx").on(table.organizationId, table.updatedAt)]
+);
+
 export const marketScans = mysqlTable(
   "market_scans",
   {

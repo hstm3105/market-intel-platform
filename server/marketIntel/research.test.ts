@@ -21,4 +21,11 @@ describe("risk-focused research question prompt", () => {
     expect(prompt).toContain("contagion paths");
     expect(prompt).toContain("relevant scan industry");
   });
+
+  it("sets explicit evidence and inference boundaries for advanced portfolio synthesis", () => {
+    const prompt = researchQuestionSystemPrompt("enterprise_portfolio");
+    expect(prompt).toContain("selected private scans");
+    expect(prompt).toContain("cross-scan patterns as inference");
+    expect(prompt).toContain("Do not invent evidence");
+  });
 });

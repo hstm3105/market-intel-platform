@@ -8,6 +8,7 @@ import { INDUSTRY_CATALOG, getIndustry } from "./catalog";
 import { addChatTurn, addNote, dashboard, getScan, listTrackedIndustries, listWorkspace, saveScanPackage, setTrackedIndustry } from "./db";
 import { renderBriefMarkdown, renderCompetitorMarkdown, renderRiskAnswerMarkdown } from "./markdown";
 import { createMonitoredIndustry, deleteMonitoredIndustry, getMonitoringPreferences, listAlerts, listMonitoredIndustries, markAlertRead, runMonitoredScan, unreadAlertCount, updateMonitoredIndustry, updateMonitoringPreferences } from "./monitoring";
+import { createKnowledgeAsset, createKnowledgeCollection, listKnowledge, listPortfolioViews, portfolioSnapshot, savePortfolioView } from "./knowledge";
 import { addExistingMember, canCreateResearch, canManageMembers, changeMemberRole, getActiveOrganization, listMembers, listOrganizations, switchOrganization, type OrganizationRole } from "./organization";
 import { answerResearchQuestion, collectPublicSources, generateMarketScan, type ResearchSource, type ScanAnalysis } from "./research";
 
@@ -45,6 +46,25 @@ export const marketIntelRouter = router({
     runNow: protectedProcedure.input(z.object({ id: z.string().min(1).max(40) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); const monitor = (await listMonitoredIndustries(ctx.user.id, current.organization.id)).find(item => item.id === input.id); if (!monitor?.scheduleCronTaskUid) throw new TRPCError({ code: "NOT_FOUND", message: "This monitored industry does not have an active schedule." }); return runMonitoredScan(monitor.scheduleCronTaskUid); }),
     markAlertRead: protectedProcedure.input(z.object({ id: z.string().min(1).max(40) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); return markAlertRead(ctx.user.id, current.organization.id, input.id); }),
     updatePreferences: protectedProcedure.input(z.object({ inAppEnabled: z.boolean(), dailyDigestEnabled: z.boolean(), minimumSeverity: z.enum(["all", "high"]) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); return updateMonitoringPreferences(ctx.user.id, current.organization.id, input); }),
+  }),
+  knowledge: router({
+    list: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return listKnowledge(ctx.user.id, current.organization.id); }),
+    createCollection: protectedProcedure.input(z.object({ name: z.string().min(2).max(160), description: z.string().max(2_000).default("") })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); return createKnowledgeCollection(ctx.user.id, current.organization.id, input); }),
+    createAsset: protectedProcedure.input(z.object({ collectionId: z.string().min(1).max(40).optional(), kind: z.enum(["insight", "brief", "decision_note"]), status: z.enum(["draft", "published"]), title: z.string().min(2).max(220), content: z.string().min(1).max(20_000), tags: z.array(z.string().min(1).max(48)).max(12), scanIds: z.array(z.string().min(1).max(40)).max(12), sourceRefs: z.array(z.string().min(1).max(32)).max(48) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); return createKnowledgeAsset(ctx.user.id, current.organization.id, input); }),
+  }),
+  portfolio: router({
+    summary: protectedProcedure.input(z.object({ scanIds: z.array(z.string().min(1).max(40)).max(12).refine(ids => new Set(ids).size === ids.length, "Choose distinct scans.") }).optional()).query(async ({ ctx, input }) => { const current = await active(ctx.user); return portfolioSnapshot(ctx.user.id, current.organization.id, input?.scanIds ?? []); }),
+    views: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return listPortfolioViews(ctx.user.id, current.organization.id); }),
+    saveView: protectedProcedure.input(z.object({ name: z.string().min(2).max(160), scanIds: z.array(z.string().min(1).max(40)).min(1).max(12).refine(ids => new Set(ids).size === ids.length, "Choose distinct scans.") })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); return savePortfolioView(ctx.user.id, current.organization.id, input); }),
+    synthesize: protectedProcedure.input(z.object({ scanIds: z.array(z.string().min(1).max(40)).min(2).max(12).refine(ids => new Set(ids).size === ids.length, "Choose distinct scans."), knowledgeAssetIds: z.array(z.string().min(1).max(40)).max(12).default([]), question: z.string().min(12).max(2_000) })).mutation(async ({ ctx, input }) => {
+      const current = await active(ctx.user); researchAllowed(current.membership.role);
+      const [portfolio, knowledge] = await Promise.all([portfolioSnapshot(ctx.user.id, current.organization.id, input.scanIds), listKnowledge(ctx.user.id, current.organization.id)]);
+      const assets = knowledge.assets.filter(asset => input.knowledgeAssetIds.includes(asset.id)).map(asset => ({ id: asset.id, kind: asset.kind, status: asset.status, title: asset.title, content: asset.content, scanIds: asset.scanIds, sourceRefs: asset.sourceRefs }));
+      if (assets.length !== input.knowledgeAssetIds.length) throw new TRPCError({ code: "NOT_FOUND", message: "One or more selected knowledge assets are outside the active organization." });
+      const packet = { portfolio: { metrics: portfolio.metrics, scans: portfolio.scans.map(scan => ({ scanId: scan.id, industry: scan.industryName, scope: scan.scope, executiveSummary: scan.executiveSummary, sourceIntelligence: scan.sourceIntelligence, emergingRisks: scan.emergingRisks, risks: scan.risks, sources: scan.sources })) }, knowledgeAssets: assets };
+      const answer = await answerResearchQuestion({ question: input.question, scanContext: JSON.stringify(packet), history: [], focus: "enterprise_portfolio" });
+      return { answer, metrics: portfolio.metrics, evaluatedScans: portfolio.scans.map(scan => ({ scanId: scan.id, industry: scan.industryName })) };
+    }),
   }),
   workspace: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return listWorkspace(ctx.user.id, current.organization.id); }),
   scan: protectedProcedure.input(idInput).query(async ({ ctx, input }) => { const current = await active(ctx.user); const result = await getScan(ctx.user.id, current.organization.id, input.scanId); if (!result) throw new TRPCError({ code: "NOT_FOUND", message: "This private research scan could not be found." }); return result; }),

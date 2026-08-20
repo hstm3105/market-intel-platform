@@ -83,3 +83,11 @@
 - [x] Add API-contract tests for scan source-intelligence metadata and scan-detail evidence presentation metrics.
 - [x] Extend report-export tests to assert source-confidence and governance content are included in PDF and PowerPoint outputs.
 - [x] Mock PDF and PowerPoint renderers to verify final exported output includes source-confidence and evidence-governance content.
+- [x] Define organization-private knowledge assets, collections, reusable insights, and evidence-link data models.
+- [x] Define portfolio-level comparison inputs and deterministic market, risk, source-confidence, and activity metrics.
+- [x] Implement an advanced research-synthesis agent that reasons across selected organization scans with evidence boundaries.
+- [x] Build protected knowledge-management and portfolio comparison procedures scoped to the active organization.
+- [x] Build consultant knowledge-management and portfolio intelligence workspaces with scan selection and evidence traceability.
+- [x] Add automated coverage for organization-private knowledge, portfolio aggregation, and advanced-agent evidence safeguards.
+- [x] Add selectable source references and visible traceable evidence links to knowledge assets.
+- [x] Move portfolio aggregation coverage into the configured test scope and verify it executes in the full suite.
