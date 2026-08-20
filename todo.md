@@ -23,3 +23,4 @@
 - [x] Implement editable PowerPoint generation for source-grounded market scan reports.
 - [x] Add clear PDF and PowerPoint export controls to the scan-detail experience.
 - [x] Add automated export-model tests and validate PDF and PowerPoint downloads in the browser.
+- [x] Fix the managed-preview Vite websocket connection failure without changing production application behavior.

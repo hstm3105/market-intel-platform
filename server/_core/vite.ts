@@ -6,12 +6,19 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
 
-export async function setupVite(app: Express, server: Server) {
-  const serverOptions = {
+export function createManagedPreviewViteOptions(server: Server) {
+  return {
     middlewareMode: true,
-    hmr: { server },
+    // The managed preview terminates TLS on its public domain and forwards the
+    // existing HTTP server. Tell the browser-side HMR client to reconnect via
+    // that secure proxy rather than Vite's standalone localhost:5173 default.
+    hmr: { server, protocol: "wss" as const, clientPort: 443 },
     allowedHosts: true as const,
   };
+}
+
+export async function setupVite(app: Express, server: Server) {
+  const serverOptions = createManagedPreviewViteOptions(server);
 
   const vite = await createViteServer({
     ...viteConfig,
