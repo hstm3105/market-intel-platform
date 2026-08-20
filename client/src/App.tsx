@@ -4,7 +4,7 @@ import { Route, Switch } from "wouter";
 import DashboardLayout from "./components/DashboardLayout";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+import Home from "./pages/HomeCompact";
 import IndustryPreferences from "./pages/IndustryPreferences";
 import KnowledgeManagement from "./pages/KnowledgeManagement";
 import Monitoring from "./pages/Monitoring";

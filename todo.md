@@ -171,3 +171,6 @@
 - [x] Add automated coverage for executive-brief privacy, scheduling boundaries, review controls, and UI data contracts.
 - [x] Validate and publish the executive distribution and experience-cleanup release.
 - [x] Activate and verify the organization’s default weekly Monday 09:00 IST executive briefing job after publication.
+- [x] Audit the home dashboard’s vertical hierarchy and define a compact first-viewport information architecture.
+- [x] Redesign the home dashboard with decision-priority content, progressive disclosure, and concise activity presentation.
+- [x] Verify the compact dashboard at desktop and mobile breakpoints, add regression coverage where appropriate, and publish the improvement.
