@@ -1,0 +1,14 @@
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/lib/trpc";
+import { BookmarkCheck, Check, Plus, Search } from "lucide-react";
+import { useMemo } from "react";
+import { useLocation } from "wouter";
+
+export default function IndustryPreferences() {
+  const [, setLocation] = useLocation(); const utils = trpc.useUtils(); const catalog = trpc.marketIntel.catalog.useQuery(); const tracked = trpc.marketIntel.tracked.useQuery();
+  const selected = useMemo(() => new Set(tracked.data?.map(item => item.industrySlug) ?? []), [tracked.data]);
+  const mutation = trpc.marketIntel.setTracked.useMutation({ onSuccess: () => { void tracked.refetch(); void utils.marketIntel.dashboard.invalidate(); } });
+  return <div className="mx-auto max-w-6xl"><section className="enter-up flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><p className="text-[11px] font-semibold uppercase tracking-[0.19em] text-[#9a713d]">Industry selector</p><h1 className="display-serif mt-2 text-4xl leading-none md:text-5xl">Your market watchlist.</h1><p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">Choose the markets that should stay close to your consulting work. Preferences are saved only to this private account.</p></div><Button onClick={() => setLocation("/new")} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"><Search className="mr-2 size-4" />Run a scan</Button></section>
+    <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{catalog.isLoading ? Array.from({ length: 6 }).map((_, index) => <Skeleton key={index} className="h-48 rounded-[1.2rem]" />) : catalog.data?.map(industry => { const isSelected = selected.has(industry.slug); return <article key={industry.slug} className={`paper-card relative overflow-hidden rounded-[1.2rem] border p-5 ${isSelected ? "border-[#bdcbbd] bg-[#edf4ed]" : "bg-card"}`}><div className="flex items-start justify-between"><span className={`flex size-10 items-center justify-center rounded-xl ${isSelected ? "bg-primary text-white" : "bg-[#f0ece1] text-[#8d724f]"}`}>{isSelected ? <BookmarkCheck className="size-4" /> : <Plus className="size-4" />}</span>{isSelected ? <span className="flex items-center gap-1 text-[11px] font-semibold text-[#356453]"><Check className="size-3" />Tracking</span> : null}</div><h2 className="display-serif mt-7 text-2xl">{industry.name}</h2><p className="mt-2 min-h-10 text-xs leading-5 text-muted-foreground">{industry.description}</p><button disabled={mutation.isPending} onClick={() => mutation.mutate({ slug: industry.slug, tracked: !isSelected })} className="mt-5 text-xs font-semibold text-primary hover:underline">{isSelected ? "Remove from watchlist" : "Add to watchlist"}</button></article>; })}</section></div>;
+}
