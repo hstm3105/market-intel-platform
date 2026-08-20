@@ -101,3 +101,12 @@
 - [x] Validate published knowledge discovery using source-linked research assets.
 - [x] Re-run published text-search validation and capture the visible query value with its expected source-linked result.
 - [x] Clear and apply a published tag filter while confirming the visible result-count and asset state change.
+- [x] Define organization-scoped audit events and retention-policy data models for security and governance foundations.
+- [x] Implement protected audit logging for sensitive organization, research, knowledge, monitoring, portfolio, and export actions.
+- [x] Implement administrator-only retention controls and deterministic governance visibility rules.
+- [x] Build an organization governance workspace for audit review and retention policy management.
+- [x] Add automated coverage for audit privacy, event integrity, role protections, and retention-policy access.
+- [x] Validate and publish the first structured security-and-governance increment before beginning collaboration workflows.
+- [x] Record completed PDF and PowerPoint exports as organization-scoped audit events after a successful client-side download.
+- [x] Add governance workspace retry states for organization-context and governance-overview query failures while preserving unsaved policy input after mutation failures.
+- [x] Strengthen governance tests with mixed-organization audit fixtures and retention-policy upsert persistence assertions.

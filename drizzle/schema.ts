@@ -205,6 +205,37 @@ export const monitoringAlerts = mysqlTable(
   table => [index("monitoring_alerts_org_user_status_idx").on(table.organizationId, table.userId, table.status, table.createdAt), index("monitoring_alerts_monitor_idx").on(table.monitoredIndustryId, table.createdAt)]
 );
 
+export const organizationRetentionPolicies = mysqlTable(
+  "organization_retention_policies",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    researchRetentionDays: int("researchRetentionDays").default(730).notNull(),
+    knowledgeRetentionDays: int("knowledgeRetentionDays").default(1095).notNull(),
+    auditRetentionDays: int("auditRetentionDays").default(1095).notNull(),
+    legalHoldEnabled: boolean("legalHoldEnabled").default(false).notNull(),
+    updatedByUserId: int("updatedByUserId").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("organization_retention_policy_org_unique").on(table.organizationId)]
+);
+
+export const organizationAuditEvents = mysqlTable(
+  "organization_audit_events",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    actorUserId: int("actorUserId").notNull(),
+    eventType: varchar("eventType", { length: 96 }).notNull(),
+    resourceType: varchar("resourceType", { length: 64 }).notNull(),
+    resourceId: varchar("resourceId", { length: 40 }),
+    metadataJson: longtext("metadataJson").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("organization_audit_events_org_created_idx").on(table.organizationId, table.createdAt), index("organization_audit_events_org_actor_idx").on(table.organizationId, table.actorUserId, table.createdAt), index("organization_audit_events_org_type_idx").on(table.organizationId, table.eventType, table.createdAt)]
+);
+
 export const researchArtifacts = mysqlTable(
   "research_artifacts",
   {

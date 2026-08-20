@@ -15,6 +15,7 @@ vi.mock("./organization", () => ({
   listMembers: vi.fn(),
   listOrganizations: vi.fn(),
 }));
+vi.mock("./governance", () => ({ getGovernanceOverview: vi.fn(), recordAuditEvent: vi.fn(), updateRetentionPolicy: vi.fn() }));
 
 import { marketIntelRouter } from "./router";
 
