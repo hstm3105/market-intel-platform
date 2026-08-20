@@ -121,3 +121,13 @@
 - [x] Add service-level mixed-organization collaboration isolation coverage for comments, reviews, and foreign targets.
 - [x] Add review-transition integrity coverage for pre-request decisions, assigned reviewers, self-review rejection, and re-request resets.
 - [x] Add assigned-reviewer and owner/admin override coverage for review decisions.
+- [x] Add review due dates and organization-private in-app notifications for mentions and review assignments.
+- [x] Surface review urgency and unread collaboration notifications in the Collaboration workspace.
+- [x] Validate and publish the collaboration completion increment.
+- [x] Add overdue and due-soon urgency states for active collaboration reviews.
+- [x] Add notification inbox error and retry handling in the Collaboration workspace.
+- [ ] Define advanced source-evidence graph, claim-level confidence, and multi-agent research-run data models.
+- [ ] Implement evidence-bounded agent orchestration with source triangulation, conflict detection, and reusable research runs.
+- [ ] Build advanced source intelligence and agent-run controls for consultants.
+- [ ] Add automated coverage for source-evidence isolation, agent-run integrity, and cross-scan orchestration boundaries.
+- [ ] Validate and publish advanced source intelligence and agent orchestration.

@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "../_core/context";
 
-const mocks = vi.hoisted(() => ({ active: vi.fn(), overview: vi.fn(), createComment: vi.fn(), requestReview: vi.fn(), decideReview: vi.fn(), audit: vi.fn() }));
+const mocks = vi.hoisted(() => ({ active: vi.fn(), overview: vi.fn(), notifications: vi.fn(), markNotificationRead: vi.fn(), createComment: vi.fn(), requestReview: vi.fn(), decideReview: vi.fn(), audit: vi.fn() }));
 vi.mock("./db", () => ({ addChatTurn: vi.fn(), addNote: vi.fn(), dashboard: vi.fn(), getScan: vi.fn(), listTrackedIndustries: vi.fn(), listWorkspace: vi.fn(), saveScanPackage: vi.fn(), setTrackedIndustry: vi.fn() }));
 vi.mock("./research", () => ({ answerResearchQuestion: vi.fn(), collectPublicSources: vi.fn(), generateMarketScan: vi.fn() }));
 vi.mock("./knowledge", () => ({ createKnowledgeAsset: vi.fn(), createKnowledgeCollection: vi.fn(), listKnowledge: vi.fn(), listPortfolioViews: vi.fn(), portfolioSnapshot: vi.fn(), savePortfolioView: vi.fn(), searchKnowledge: vi.fn(), updateKnowledgeAssetTags: vi.fn() }));
 vi.mock("./monitoring", () => ({ createMonitoredIndustry: vi.fn(), deleteMonitoredIndustry: vi.fn(), getMonitoringPreferences: vi.fn(), listAlerts: vi.fn(), listMonitoredIndustries: vi.fn(), markAlertRead: vi.fn(), runMonitoredScan: vi.fn(), unreadAlertCount: vi.fn(), updateMonitoredIndustry: vi.fn(), updateMonitoringPreferences: vi.fn() }));
 vi.mock("./organization", () => ({ getActiveOrganization: mocks.active, addExistingMember: vi.fn(), switchOrganization: vi.fn(), canCreateResearch: vi.fn((role: string) => role !== "viewer"), canManageMembers: vi.fn((role: string) => role === "owner" || role === "admin"), changeMemberRole: vi.fn(), listMembers: vi.fn(), listOrganizations: vi.fn() }));
 vi.mock("./governance", () => ({ getGovernanceOverview: vi.fn(), recordAuditEvent: mocks.audit, updateRetentionPolicy: vi.fn() }));
-vi.mock("./collaboration", () => ({ createComment: mocks.createComment, decideReview: mocks.decideReview, getCollaborationOverview: mocks.overview, requestReview: mocks.requestReview }));
+vi.mock("./collaboration", () => ({ createComment: mocks.createComment, decideReview: mocks.decideReview, getCollaborationOverview: mocks.overview, listNotifications: mocks.notifications, markNotificationRead: mocks.markNotificationRead, requestReview: mocks.requestReview }));
 
 import { marketIntelRouter } from "./router";
 
@@ -17,7 +17,7 @@ const activeFor = (role: "owner" | "admin" | "research_lead" | "analyst" | "view
 const target = { targetType: "market_scan" as const, targetId: "scan-1" };
 
 describe("marketIntel collaboration controls", () => {
-  beforeEach(() => { vi.clearAllMocks(); mocks.active.mockResolvedValue(activeFor("analyst")); mocks.overview.mockResolvedValue({ comments: [], review: null }); mocks.createComment.mockResolvedValue({ id: "comment-1", mentionedUserIds: [3] }); mocks.requestReview.mockResolvedValue({ id: "review-1", status: "in_review" }); mocks.decideReview.mockResolvedValue({ id: "review-1", status: "approved" }); });
+  beforeEach(() => { vi.clearAllMocks(); mocks.active.mockResolvedValue(activeFor("analyst")); mocks.overview.mockResolvedValue({ comments: [], review: null }); mocks.notifications.mockResolvedValue([]); mocks.markNotificationRead.mockResolvedValue({ success: true }); mocks.createComment.mockResolvedValue({ id: "comment-1", mentionedUserIds: [3] }); mocks.requestReview.mockResolvedValue({ id: "review-1", status: "in_review" }); mocks.decideReview.mockResolvedValue({ id: "review-1", status: "approved" }); });
 
   it("retrieves collaboration records only through the caller’s active organization", async () => {
     await marketIntelRouter.createCaller(context()).collaboration.overview(target);
@@ -46,5 +46,16 @@ describe("marketIntel collaboration controls", () => {
     expect(mocks.audit).toHaveBeenCalledWith("org-secure", 8, expect.objectContaining({ eventType: "collaboration.review.approved" }));
     mocks.active.mockResolvedValue(activeFor("analyst"));
     await expect(marketIntelRouter.createCaller(context()).collaboration.decideReview({ ...target, status: "approved", decisionNote: "Approved" })).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("scopes notification inbox actions to the active organization and persists a review due date", async () => {
+    const caller = marketIntelRouter.createCaller(context());
+    await caller.collaboration.notifications();
+    await caller.collaboration.markNotificationRead({ id: "notice-1" });
+    const dueAt = new Date("2026-09-15T12:00:00.000Z");
+    await caller.collaboration.requestReview({ ...target, reviewerUserId: 3, dueAt });
+    expect(mocks.notifications).toHaveBeenCalledWith("org-secure", 8);
+    expect(mocks.markNotificationRead).toHaveBeenCalledWith("org-secure", 8, "notice-1");
+    expect(mocks.requestReview).toHaveBeenCalledWith("org-secure", 8, expect.objectContaining({ reviewerUserId: 3, dueAt }));
   });
 });

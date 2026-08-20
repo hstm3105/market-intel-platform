@@ -264,10 +264,30 @@ export const collaborationReviews = mysqlTable(
     reviewerUserId: int("reviewerUserId"),
     decisionByUserId: int("decisionByUserId"),
     decisionNote: longtext("decisionNote").notNull(),
+    dueAt: timestamp("dueAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },
   table => [uniqueIndex("collaboration_reviews_org_target_unique").on(table.organizationId, table.targetType, table.targetId), index("collaboration_reviews_org_status_updated_idx").on(table.organizationId, table.status, table.updatedAt), index("collaboration_reviews_org_reviewer_status_idx").on(table.organizationId, table.reviewerUserId, table.status)]
+);
+
+export const collaborationNotifications = mysqlTable(
+  "collaboration_notifications",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    userId: int("userId").notNull(),
+    actorUserId: int("actorUserId").notNull(),
+    type: mysqlEnum("type", ["mention", "review_assigned", "review_decision"]).notNull(),
+    targetType: mysqlEnum("targetType", ["market_scan", "knowledge_asset"]).notNull(),
+    targetId: varchar("targetId", { length: 32 }).notNull(),
+    title: varchar("title", { length: 220 }).notNull(),
+    body: longtext("body").notNull(),
+    status: mysqlEnum("status", ["unread", "read"]).default("unread").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    readAt: timestamp("readAt"),
+  },
+  table => [index("collaboration_notifications_org_user_status_idx").on(table.organizationId, table.userId, table.status, table.createdAt), index("collaboration_notifications_org_target_idx").on(table.organizationId, table.targetType, table.targetId, table.createdAt)]
 );
 
 export const researchArtifacts = mysqlTable(

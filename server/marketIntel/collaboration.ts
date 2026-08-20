@@ -1,5 +1,5 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
-import { collaborationComments, collaborationReviews, knowledgeAssets, marketScans, organizationMembers, users } from "../../drizzle/schema";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { collaborationComments, collaborationNotifications, collaborationReviews, knowledgeAssets, marketScans, organizationMembers, users } from "../../drizzle/schema";
 import { getDb } from "../db";
 
 export const collaborationTargetTypes = ["market_scan", "knowledge_asset"] as const;
@@ -29,6 +29,14 @@ async function requireMentionMembers(organizationId: string, mentionedUserIds: n
 
 const commentSelection = { id: collaborationComments.id, organizationId: collaborationComments.organizationId, targetType: collaborationComments.targetType, targetId: collaborationComments.targetId, authorUserId: collaborationComments.authorUserId, body: collaborationComments.body, mentionedUserIdsJson: collaborationComments.mentionedUserIdsJson, createdAt: collaborationComments.createdAt, updatedAt: collaborationComments.updatedAt, authorName: users.name, authorEmail: users.email };
 const readMentionIds = (value: string) => { try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? distinctIds(parsed.map(Number)) : []; } catch { return []; } };
+const createId = () => crypto.randomUUID().replace(/-/g, "").slice(0, 32);
+
+async function createNotifications(organizationId: string, actorUserId: number, target: CollaborationTarget, recipientUserIds: number[], type: "mention" | "review_assigned" | "review_decision", title: string, body: string) {
+  const recipients = distinctIds(recipientUserIds).filter(userId => userId !== actorUserId);
+  if (!recipients.length) return;
+  const db = await requireDb();
+  await db.insert(collaborationNotifications).values(recipients.map(userId => ({ id: createId(), organizationId, userId, actorUserId, type, targetType: target.targetType, targetId: target.targetId, title: title.slice(0, 220), body: body.slice(0, 4_000), status: "unread" as const })));
+}
 
 export async function listComments(organizationId: string, target: CollaborationTarget) {
   await requireTarget(organizationId, target);
@@ -41,9 +49,10 @@ export async function createComment(organizationId: string, authorUserId: number
   await requireTarget(organizationId, input);
   const db = await requireDb();
   const mentionedUserIds = await requireMentionMembers(organizationId, distinctIds(input.mentionedUserIds ?? []));
-  const id = crypto.randomUUID().replace(/-/g, "").slice(0, 32);
+  const id = createId();
   await db.insert(collaborationComments).values({ id, organizationId, targetType: input.targetType, targetId: input.targetId, authorUserId, body: input.body.trim(), mentionedUserIdsJson: JSON.stringify(mentionedUserIds) });
   const [comment] = await db.select(commentSelection).from(collaborationComments).innerJoin(users, eq(users.id, collaborationComments.authorUserId)).where(eq(collaborationComments.id, id)).limit(1);
+  await createNotifications(organizationId, authorUserId, input, mentionedUserIds, "mention", "You were mentioned in a collaboration thread", input.body.trim());
   return { ...comment, mentionedUserIds };
 }
 
@@ -54,7 +63,7 @@ export async function getReview(organizationId: string, target: CollaborationTar
   return review && review.organizationId === organizationId && review.targetType === target.targetType && review.targetId === target.targetId ? review : null;
 }
 
-export async function requestReview(organizationId: string, requesterUserId: number, input: CollaborationTarget & { reviewerUserId?: number | null }) {
+export async function requestReview(organizationId: string, requesterUserId: number, input: CollaborationTarget & { reviewerUserId?: number | null; dueAt?: Date | null }) {
   await requireTarget(organizationId, input);
   const db = await requireDb();
   if (input.reviewerUserId) {
@@ -62,8 +71,9 @@ export async function requestReview(organizationId: string, requesterUserId: num
     const [reviewer] = await db.select({ role: organizationMembers.role }).from(organizationMembers).where(and(eq(organizationMembers.organizationId, organizationId), eq(organizationMembers.userId, input.reviewerUserId))).limit(1);
     if (!reviewer || !reviewerRoles.has(reviewer.role)) throw new Error("The assigned reviewer must be an owner, administrator, or research lead in this organization.");
   }
-  const id = crypto.randomUUID().replace(/-/g, "").slice(0, 32);
-  await db.insert(collaborationReviews).values({ id, organizationId, targetType: input.targetType, targetId: input.targetId, status: "in_review", requestedByUserId: requesterUserId, reviewerUserId: input.reviewerUserId ?? null, decisionByUserId: null, decisionNote: "" }).onDuplicateKeyUpdate({ set: { status: "in_review", requestedByUserId: requesterUserId, reviewerUserId: input.reviewerUserId ?? null, decisionByUserId: null, decisionNote: "" } });
+  const id = createId();
+  await db.insert(collaborationReviews).values({ id, organizationId, targetType: input.targetType, targetId: input.targetId, status: "in_review", requestedByUserId: requesterUserId, reviewerUserId: input.reviewerUserId ?? null, decisionByUserId: null, decisionNote: "", dueAt: input.dueAt ?? null }).onDuplicateKeyUpdate({ set: { status: "in_review", requestedByUserId: requesterUserId, reviewerUserId: input.reviewerUserId ?? null, decisionByUserId: null, decisionNote: "", dueAt: input.dueAt ?? null } });
+  await createNotifications(organizationId, requesterUserId, input, input.reviewerUserId ? [input.reviewerUserId] : [], "review_assigned", "You were assigned a review", input.dueAt ? `Review requested for completion by ${input.dueAt.toLocaleDateString()}.` : "A review has been assigned without a due date.");
   return getReview(organizationId, input);
 }
 
@@ -74,10 +84,22 @@ export async function decideReview(organizationId: string, actorUserId: number, 
   if (review.reviewerUserId && review.reviewerUserId !== actorUserId && !canOverrideReviewer) throw new Error("Only the assigned reviewer or an organization owner/administrator can decide this review.");
   const db = await requireDb();
   await db.update(collaborationReviews).set({ status: input.status, decisionByUserId: actorUserId, decisionNote: input.decisionNote.trim() }).where(eq(collaborationReviews.id, review.id));
+  await createNotifications(organizationId, actorUserId, input, [review.requestedByUserId], "review_decision", input.status === "approved" ? "Your review was approved" : "Your review needs changes", input.decisionNote.trim() || "A review decision was recorded.");
   return getReview(organizationId, input);
 }
 
 export async function getCollaborationOverview(organizationId: string, target: CollaborationTarget) {
   const [comments, review] = await Promise.all([listComments(organizationId, target), getReview(organizationId, target)]);
   return { comments, review };
+}
+
+export async function listNotifications(organizationId: string, userId: number) {
+  const db = await requireDb();
+  return db.select().from(collaborationNotifications).where(and(eq(collaborationNotifications.organizationId, organizationId), eq(collaborationNotifications.userId, userId))).orderBy(desc(collaborationNotifications.createdAt)).limit(50);
+}
+
+export async function markNotificationRead(organizationId: string, userId: number, notificationId: string) {
+  const db = await requireDb();
+  await db.update(collaborationNotifications).set({ status: "read", readAt: new Date() }).where(and(eq(collaborationNotifications.id, notificationId), eq(collaborationNotifications.organizationId, organizationId), eq(collaborationNotifications.userId, userId)));
+  return { success: true };
 }
