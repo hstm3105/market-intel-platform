@@ -133,3 +133,15 @@
 - [x] Validate and publish advanced source intelligence and agent orchestration.
 - [x] Add service-level persistence coverage for successful agent runs and claim records.
 - [x] Add mixed-organization retrieval coverage for agent-run and evidence-claim grouping boundaries.
+- [x] Define organization-private portfolio watchlists, client mandates, and administration policy data models.
+- [x] Apply an additive migration with organization, mandate, owner, and status indexes.
+- [x] Implement protected mandate, watchlist, and portfolio-stage controls with audit recording.
+- [x] Implement administrator-only organization policy and portfolio oversight procedures.
+- [x] Build an enterprise portfolio command center with mandate health, watchlist, and ownership controls.
+- [x] Add automated coverage for portfolio privacy, role protections, policy integrity, and cross-organization isolation.
+- [x] Validate and publish the portfolio and enterprise-administration increment before identity federation and integrations.
+- [x] Add service-level portfolio-policy persistence and return-value integrity coverage.
+- [x] Add watchlist creation, status-control, and audit-integrity coverage.
+- [x] Add mandate capacity, owner-membership, and foreign-reference safeguard coverage.
+- [x] Add non-member mandate-owner rejection coverage.
+- [x] Add foreign knowledge-asset mandate-reference rejection coverage.

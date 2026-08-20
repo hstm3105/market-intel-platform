@@ -121,6 +121,60 @@ export const portfolioViews = mysqlTable(
   table => [uniqueIndex("portfolio_views_org_name_unique").on(table.organizationId, table.name), index("portfolio_views_org_updated_idx").on(table.organizationId, table.updatedAt)]
 );
 
+export const portfolioMandates = mysqlTable(
+  "portfolio_mandates",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    createdByUserId: int("createdByUserId").notNull(),
+    ownerUserId: int("ownerUserId").notNull(),
+    name: varchar("name", { length: 180 }).notNull(),
+    clientLabel: varchar("clientLabel", { length: 180 }).notNull(),
+    description: longtext("description").notNull(),
+    status: mysqlEnum("status", ["scoping", "active", "at_risk", "complete"]).notNull(),
+    priority: mysqlEnum("priority", ["low", "standard", "high", "critical"]).notNull(),
+    targetDate: timestamp("targetDate"),
+    scanIdsJson: longtext("scanIdsJson").notNull(),
+    knowledgeAssetIdsJson: longtext("knowledgeAssetIdsJson").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [index("portfolio_mandates_org_status_idx").on(table.organizationId, table.status, table.updatedAt), index("portfolio_mandates_org_owner_idx").on(table.organizationId, table.ownerUserId, table.updatedAt), index("portfolio_mandates_org_updated_idx").on(table.organizationId, table.updatedAt)]
+);
+
+export const portfolioWatchlists = mysqlTable(
+  "portfolio_watchlists",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    mandateId: varchar("mandateId", { length: 32 }),
+    createdByUserId: int("createdByUserId").notNull(),
+    ownerUserId: int("ownerUserId").notNull(),
+    targetType: mysqlEnum("targetType", ["industry", "company", "risk_theme"]).notNull(),
+    label: varchar("label", { length: 180 }).notNull(),
+    rationale: longtext("rationale").notNull(),
+    status: mysqlEnum("status", ["watching", "escalated", "resolved"]).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [index("portfolio_watchlists_org_status_idx").on(table.organizationId, table.status, table.updatedAt), index("portfolio_watchlists_org_mandate_idx").on(table.organizationId, table.mandateId, table.updatedAt), index("portfolio_watchlists_org_owner_idx").on(table.organizationId, table.ownerUserId, table.updatedAt)]
+);
+
+export const organizationPortfolioPolicies = mysqlTable(
+  "organization_portfolio_policies",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    maxActiveMandates: int("maxActiveMandates").default(30).notNull(),
+    requireMandateOwner: boolean("requireMandateOwner").default(true).notNull(),
+    requireReviewForCritical: boolean("requireReviewForCritical").default(true).notNull(),
+    updatedByUserId: int("updatedByUserId").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("organization_portfolio_policies_org_unique").on(table.organizationId)]
+);
+
 export const researchAgentRuns = mysqlTable(
   "research_agent_runs",
   {
