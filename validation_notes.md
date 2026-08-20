@@ -45,3 +45,11 @@ When the scheduler did not return its next-execution metadata, the application d
 The Source Intelligence workspace renders against saved market scans and presents deterministic source authority, recency, publisher diversity, direct-link traceability, confidence, and governance caveats. The screen explicitly frames these as evidence-quality signals rather than assertions that individual source claims are true.
 
 The active FinTech scan-detail page now renders the same source-intelligence summary directly above the existing scan experience, including confidence score, authority, recency, publisher diversity, traceability, and tier counts. The dedicated Source Intelligence workspace and direct scan-detail review link both render successfully in the consultant shell.
+
+## Focused Monitoring Alert Validation
+
+The existing published FinTech watch remains authenticated, active, and scheduled weekly. Its monitoring brief was refined to focus a follow-up comparison on stablecoin and open-banking regulation, AI fraud and model-risk enforcement, real-time payments economics, and material competitive moves. The next action is to save that focused brief and run a fresh public-source comparison against the persisted baseline.
+
+The focused published refresh completed and generated one unread, medium-severity private competitor alert linked to the new FinTech scan. The alert identifies a new Latvian specialised banking licence as a potential EU fintech competitor-pool expansion and retains the fresh source reference `S11`.
+
+The linked scan opened successfully in the authenticated workspace and displayed its full public-source research, including the source-intelligence panel. The reviewed alert then transitioned from `NEW` with one unread signal to `Reviewed` with zero unread signals in the published alert feed.

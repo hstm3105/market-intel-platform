@@ -71,7 +71,7 @@
 - [x] Add a monitored-alert lifecycle test that verifies unread alerts transition to read only within their owning organization.
 - [x] Validate the published monitored-industry schedule and private alert-review workflow.
 - [x] Define an enterprise SSO provider strategy and identity-governance configuration model for the next capability.
-- [ ] Validate a second production refresh that generates an alert, opens its linked scan, and marks it read in the UI.
+- [x] Validate a second production refresh that generates an alert, opens its linked scan, and marks it read in the UI.
 - [x] Investigate and fix missing published next-run schedule visibility for monitored industries, then confirm the recurring job is displayed.
 - [x] Define source-quality, recency, diversity, and traceability signals for public-web market research.
 - [x] Enrich saved scan sources with deterministic evidence-quality metadata and confidence flags.
