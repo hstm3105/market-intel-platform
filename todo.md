@@ -24,3 +24,8 @@
 - [x] Add clear PDF and PowerPoint export controls to the scan-detail experience.
 - [x] Add automated export-model tests and validate PDF and PowerPoint downloads in the browser.
 - [x] Fix the managed-preview Vite websocket connection failure without changing production application behavior.
+- [x] Define a source-grounded data contract for the top-three emerging industry risks summary.
+- [x] Extend the agentic scan prompt and parsing logic to produce the prioritized emerging-risk summary.
+- [x] Render the AI-powered risk summary in the market-scan view and shareable report exports.
+- [x] Add tests for emerging-risk summary parsing and presentation safeguards.
+- [x] Restore legacy saved-scan detail rendering while preserving the new emerging-risk summary fallback.
