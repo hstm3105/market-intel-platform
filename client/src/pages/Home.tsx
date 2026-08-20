@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, BookOpenText, FolderOpen, Search, Sparkles } from "lucide-react";
+import { ArrowRight, BellRing, BookOpenText, FolderOpen, Search, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 
 const dateLabel = (value: Date | string) => new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
@@ -12,6 +12,7 @@ export default function Home() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const dashboard = trpc.marketIntel.dashboard.useQuery();
+  const monitoring = trpc.marketIntel.monitoring.alerts.useQuery();
   const data = dashboard.data;
 
   return <div className="space-y-7">
@@ -24,10 +25,11 @@ export default function Home() {
       <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-xs text-[#637169]"><span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-[#a87940]" />Public-source research</span><span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-[#a87940]" />Private by account</span><span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-[#a87940]" />Executive-ready outputs</span></div>
     </section>
 
-    <section className="grid gap-4 md:grid-cols-3">
+    <section className="grid gap-4 md:grid-cols-4">
       <MetricCard label="Tracked industries" value={data?.industries.length} icon={BookOpenText} helper="Your saved market watchlist" loading={dashboard.isLoading} onClick={() => setLocation("/industries")} />
       <MetricCard label="Recent scans" value={data?.scans.length} icon={Search} helper="The most recent research runs" loading={dashboard.isLoading} onClick={() => setLocation("/workspace")} />
       <MetricCard label="Saved briefs" value={data?.briefs.length} icon={FolderOpen} helper="Executive perspectives on file" loading={dashboard.isLoading} onClick={() => setLocation("/workspace")} />
+      <MetricCard label="Unread alerts" value={monitoring.data?.unreadCount} icon={BellRing} helper="Material changes awaiting review" loading={monitoring.isLoading} onClick={() => setLocation("/monitoring")} />
     </section>
 
     <section className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">

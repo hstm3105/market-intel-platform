@@ -1,10 +1,13 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { parse as parseCookie } from "cookie";
+import { COOKIE_NAME } from "@shared/const";
 import { protectedProcedure, router } from "../_core/trpc";
 import { channelForQuestionMode, selectConversationHistory } from "./chat";
 import { INDUSTRY_CATALOG, getIndustry } from "./catalog";
 import { addChatTurn, addNote, dashboard, getScan, listTrackedIndustries, listWorkspace, saveScanPackage, setTrackedIndustry } from "./db";
 import { renderBriefMarkdown, renderCompetitorMarkdown, renderRiskAnswerMarkdown } from "./markdown";
+import { createMonitoredIndustry, deleteMonitoredIndustry, getMonitoringPreferences, listAlerts, listMonitoredIndustries, markAlertRead, runMonitoredScan, unreadAlertCount, updateMonitoredIndustry, updateMonitoringPreferences } from "./monitoring";
 import { addExistingMember, canCreateResearch, canManageMembers, changeMemberRole, getActiveOrganization, listMembers, listOrganizations, switchOrganization, type OrganizationRole } from "./organization";
 import { answerResearchQuestion, collectPublicSources, generateMarketScan, type ResearchSource, type ScanAnalysis } from "./research";
 
@@ -14,6 +17,12 @@ const parseStoredScan = (sourceJson: string, analysisJson: string) => ({ sources
 const active = (user: { id: number; name?: string | null }) => getActiveOrganization(user.id, user.name);
 const researchAllowed = (role: OrganizationRole) => { if (!canCreateResearch(role)) throw new TRPCError({ code: "FORBIDDEN", message: "Your organization role is view-only." }); };
 const memberManagementAllowed = (role: OrganizationRole) => { if (!canManageMembers(role)) throw new TRPCError({ code: "FORBIDDEN", message: "Only organization owners and admins can manage members." }); };
+const sessionFromRequest = (request: { headers: { cookie?: string; authorization?: string } }) => {
+  const cookieValue = parseCookie(request.headers.cookie ?? "")[COOKIE_NAME];
+  if (cookieValue) return cookieValue;
+  const authorization = request.headers.authorization;
+  return authorization?.startsWith("Bearer ") ? authorization.slice(7) : "";
+};
 
 export const marketIntelRouter = router({
   organization: router({
@@ -26,6 +35,17 @@ export const marketIntelRouter = router({
   dashboard: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return dashboard(ctx.user.id, current.organization.id); }),
   tracked: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return listTrackedIndustries(ctx.user.id, current.organization.id); }),
   setTracked: protectedProcedure.input(z.object({ slug: z.string().min(1).max(96), tracked: z.boolean() })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); const industry = getIndustry(input.slug); if (!industry) throw new TRPCError({ code: "BAD_REQUEST", message: "Select an industry from the available catalog." }); await setTrackedIndustry(ctx.user.id, current.organization.id, { slug: industry.slug, name: industry.name, tracked: input.tracked }); return { success: true }; }),
+  monitoring: router({
+    list: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return listMonitoredIndustries(ctx.user.id, current.organization.id); }),
+    alerts: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); const [alerts, unreadCount] = await Promise.all([listAlerts(ctx.user.id, current.organization.id), unreadAlertCount(ctx.user.id, current.organization.id)]); return { alerts, unreadCount }; }),
+    preferences: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return getMonitoringPreferences(ctx.user.id, current.organization.id); }),
+    create: protectedProcedure.input(z.object({ industrySlug: z.string().min(1).max(96), scope: z.string().min(20).max(1_500), cadence: z.enum(["weekly", "monthly"]), riskThreshold: z.enum(["all", "high"]) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); const industry = getIndustry(input.industrySlug); if (!industry) throw new TRPCError({ code: "BAD_REQUEST", message: "Select an industry from the available catalog." }); const monitor = await createMonitoredIndustry(ctx.user.id, current.organization.id, { industrySlug: industry.slug, industryName: industry.name, scope: input.scope, cadence: input.cadence, riskThreshold: input.riskThreshold }, sessionFromRequest(ctx.req)); await setTrackedIndustry(ctx.user.id, current.organization.id, { slug: industry.slug, name: industry.name, tracked: true }); return monitor; }),
+    update: protectedProcedure.input(z.object({ id: z.string().min(1).max(40), scope: z.string().min(20).max(1_500).optional(), cadence: z.enum(["weekly", "monthly"]).optional(), riskThreshold: z.enum(["all", "high"]).optional(), enabled: z.boolean().optional() })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); const { id, ...patch } = input; return updateMonitoredIndustry(ctx.user.id, current.organization.id, id, patch, sessionFromRequest(ctx.req)); }),
+    remove: protectedProcedure.input(z.object({ id: z.string().min(1).max(40) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); return deleteMonitoredIndustry(ctx.user.id, current.organization.id, input.id, sessionFromRequest(ctx.req)); }),
+    runNow: protectedProcedure.input(z.object({ id: z.string().min(1).max(40) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); const monitor = (await listMonitoredIndustries(ctx.user.id, current.organization.id)).find(item => item.id === input.id); if (!monitor?.scheduleCronTaskUid) throw new TRPCError({ code: "NOT_FOUND", message: "This monitored industry does not have an active schedule." }); return runMonitoredScan(monitor.scheduleCronTaskUid); }),
+    markAlertRead: protectedProcedure.input(z.object({ id: z.string().min(1).max(40) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); return markAlertRead(ctx.user.id, current.organization.id, input.id); }),
+    updatePreferences: protectedProcedure.input(z.object({ inAppEnabled: z.boolean(), dailyDigestEnabled: z.boolean(), minimumSeverity: z.enum(["all", "high"]) })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); return updateMonitoringPreferences(ctx.user.id, current.organization.id, input); }),
+  }),
   workspace: protectedProcedure.query(async ({ ctx }) => { const current = await active(ctx.user); return listWorkspace(ctx.user.id, current.organization.id); }),
   scan: protectedProcedure.input(idInput).query(async ({ ctx, input }) => { const current = await active(ctx.user); const result = await getScan(ctx.user.id, current.organization.id, input.scanId); if (!result) throw new TRPCError({ code: "NOT_FOUND", message: "This private research scan could not be found." }); return result; }),
   createScan: protectedProcedure.input(z.object({ industrySlug: z.string().min(1).max(96), scope: z.string().min(20, "Add a research focus of at least 20 characters.").max(1_500), projectName: z.string().max(160).optional() })).mutation(async ({ ctx, input }) => { const current = await active(ctx.user); researchAllowed(current.membership.role); const industry = getIndustry(input.industrySlug); if (!industry) throw new TRPCError({ code: "BAD_REQUEST", message: "Select an industry from the available catalog." }); const sources = await collectPublicSources(industry.name); const analysis = await generateMarketScan({ industry: industry.name, scope: input.scope, sources }); const scan = await saveScanPackage(ctx.user.id, current.organization.id, { industrySlug: industry.slug, industryName: industry.name, projectName: input.projectName, scope: input.scope, sources, analysis }); await setTrackedIndustry(ctx.user.id, current.organization.id, { slug: industry.slug, name: industry.name, tracked: true }); return { scanId: scan.id }; }),

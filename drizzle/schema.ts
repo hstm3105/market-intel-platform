@@ -1,4 +1,4 @@
-import { index, int, longtext, mysqlEnum, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { boolean, index, int, longtext, mysqlEnum, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 /** Core user table backing the Manus OAuth flow. */
 export const users = mysqlTable("users", {
@@ -79,6 +79,7 @@ export const marketScans = mysqlTable(
    id: varchar("id", { length: 32 }).primaryKey(),
    userId: int("userId").notNull(),
     organizationId: varchar("organizationId", { length: 32 }),
+    monitoredIndustryId: varchar("monitoredIndustryId", { length: 32 }),
    industrySlug: varchar("industrySlug", { length: 96 }).notNull(),
     industryName: varchar("industryName", { length: 120 }).notNull(),
     projectId: varchar("projectId", { length: 32 }),
@@ -95,7 +96,65 @@ export const marketScans = mysqlTable(
    index("market_scans_user_created_idx").on(table.userId, table.createdAt),
    index("market_scans_user_industry_idx").on(table.userId, table.industrySlug),
     index("market_scans_organization_created_idx").on(table.organizationId, table.createdAt),
+    index("market_scans_monitor_idx").on(table.monitoredIndustryId, table.createdAt),
   ]
+);
+
+export const monitoredIndustries = mysqlTable(
+  "monitored_industries",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    userId: int("userId").notNull(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    industrySlug: varchar("industrySlug", { length: 96 }).notNull(),
+    industryName: varchar("industryName", { length: 120 }).notNull(),
+    scope: longtext("scope").notNull(),
+    cadence: mysqlEnum("cadence", ["weekly", "monthly"]).default("weekly").notNull(),
+    cronExpression: varchar("cronExpression", { length: 64 }).notNull(),
+    scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
+    enabled: boolean("enabled").default(true).notNull(),
+    riskThreshold: mysqlEnum("riskThreshold", ["all", "high"]).default("all").notNull(),
+    lastScanId: varchar("lastScanId", { length: 32 }),
+    lastRunAt: timestamp("lastRunAt"),
+    nextRunAt: timestamp("nextRunAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("monitored_industries_org_user_slug_unique").on(table.organizationId, table.userId, table.industrySlug), index("monitored_industries_schedule_uid_idx").on(table.scheduleCronTaskUid), index("monitored_industries_org_enabled_idx").on(table.organizationId, table.enabled)]
+);
+
+export const monitoringPreferences = mysqlTable(
+  "monitoring_preferences",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    userId: int("userId").notNull(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    inAppEnabled: boolean("inAppEnabled").default(true).notNull(),
+    dailyDigestEnabled: boolean("dailyDigestEnabled").default(false).notNull(),
+    minimumSeverity: mysqlEnum("minimumSeverity", ["all", "high"]).default("all").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("monitoring_preferences_org_user_unique").on(table.organizationId, table.userId)]
+);
+
+export const monitoringAlerts = mysqlTable(
+  "monitoring_alerts",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    userId: int("userId").notNull(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    monitoredIndustryId: varchar("monitoredIndustryId", { length: 32 }).notNull(),
+    scanId: varchar("scanId", { length: 32 }).notNull(),
+    category: mysqlEnum("category", ["risk", "trend", "opportunity", "competitor"]).notNull(),
+    severity: mysqlEnum("severity", ["high", "medium", "low"]).notNull(),
+    title: varchar("title", { length: 220 }).notNull(),
+    summary: longtext("summary").notNull(),
+    evidenceJson: longtext("evidenceJson").notNull(),
+    status: mysqlEnum("status", ["unread", "read"]).default("unread").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("monitoring_alerts_org_user_status_idx").on(table.organizationId, table.userId, table.status, table.createdAt), index("monitoring_alerts_monitor_idx").on(table.monitoredIndustryId, table.createdAt)]
 );
 
 export const researchArtifacts = mysqlTable(
