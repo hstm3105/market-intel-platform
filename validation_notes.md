@@ -61,3 +61,13 @@ After a cache-bypassed production refresh, the published Knowledge workspace loa
 The published Knowledge workspace successfully loaded the selected FinTech scan’s twelve stored public sources and recorded a selected `S1` source reference while retaining its direct source URL. This confirms the evidence-selection control is operating against private scan data.
 
 An evidence-linked insight was prepared in the published workspace with one selected FinTech scan, source reference `S1`, an explicit strategic conclusion, and a stated diligence boundary. The next validation action publishes this asset into the active organization’s knowledge library.
+
+After the direct-URL validation release, the cache-bypassed production Knowledge workspace again loaded the FinTech source selector, including the direct `S1` source reference. The remaining validation is to persist and display the resulting evidence-linked asset.
+
+The updated production form preserves the selected FinTech scan and one cited source while the user returns to the title and conclusion fields, confirming the evidence selection survives the preparation flow.
+
+The post-fix production asset now includes the same selected FinTech scan and direct source reference, together with an evidence-bounded title and conclusion, and is ready for publication into the private knowledge library.
+
+The post-fix publication persisted successfully in the active private organization: the `FinTech data and risk-control operating thesis` asset stores the selected FinTech scan ID and the full direct `S1` Google News source URL in `sourceRefsJson`. The remaining check is that the refreshed library renders that persisted source as a clickable link.
+
+The refreshed published Knowledge library displays the persisted asset with one linked scan, one source reference, and an interactive `S1` anchor. This completes the end-to-end direct evidence-link validation in the active organization.
