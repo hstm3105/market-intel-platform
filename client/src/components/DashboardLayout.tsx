@@ -17,6 +17,7 @@ const menuGroups = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { loading, user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const activeDestination = menuGroups.flatMap(group => group.items).find(item => item.path === "/" ? location === "/" : location === item.path || location.startsWith(`${item.path}/`));
 
   if (loading) return <div className="min-h-screen bg-background" />;
   if (!user) {
@@ -42,9 +43,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span className="min-w-0 group-data-[collapsible=icon]:hidden"><span className="block truncate text-sm font-semibold tracking-tight">Market intelligence</span><span className="mt-0.5 block text-[10px] uppercase tracking-[0.15em] text-[#b8c5bb]">Research system</span></span>
           </button>
         </SidebarHeader>
-        <SidebarContent className="px-2 py-5">
-          <div className="space-y-5">{menuGroups.map(group => <div key={group.label}><p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#aabbb0] group-data-[collapsible=icon]:hidden">{group.label}</p><SidebarMenu>{group.items.map(item => { const isActive = item.path === "/" ? location === "/" : location === item.path || location.startsWith(`${item.path}/`); return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={isActive} tooltip={item.label} onClick={() => setLocation(item.path)} className="h-10 rounded-xl text-[#dce6de] hover:bg-white/10 hover:text-white data-[active=true]:bg-[#e6cc83] data-[active=true]:text-[#173a33]"><item.icon className="size-4" /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>; })}</SidebarMenu></div>)}</div>
-          <div className="mx-2 mt-8 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 group-data-[collapsible=icon]:hidden">
+        <SidebarContent className="min-h-0 flex-1 overflow-y-auto px-2 py-4">
+          <div className="space-y-4">{menuGroups.map(group => <div key={group.label}><p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#aabbb0] group-data-[collapsible=icon]:hidden">{group.label}</p><SidebarMenu>{group.items.map(item => { const isActive = item.path === "/" ? location === "/" : location === item.path || location.startsWith(`${item.path}/`); return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={isActive} tooltip={item.label} onClick={() => setLocation(item.path)} className="h-9 rounded-xl text-[#dce6de] hover:bg-white/10 hover:text-white data-[active=true]:bg-[#e6cc83] data-[active=true]:text-[#173a33]"><item.icon className="size-4" /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>; })}</SidebarMenu></div>)}</div>
+          <div className="sidebar-narrative mx-2 mt-6 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 group-data-[collapsible=icon]:hidden">
             <p className="text-xs font-medium text-[#edf2ec]">Research with intent</p>
             <p className="mt-2 text-xs leading-5 text-[#afc0b5]">From source-grounded scans to executive-ready distribution, every decision stays traceable.</p>
             <button onClick={() => setLocation("/new")} className="mt-4 flex items-center gap-2 text-xs font-semibold text-[#e6cc83]"><Plus className="size-3.5" /> Launch a scan</button>
@@ -63,11 +64,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="min-h-screen bg-transparent">
-        <header className="flex h-[5.25rem] items-center justify-between border-b border-border/80 bg-background/70 px-4 backdrop-blur-xl md:px-7">
-          <div className="flex items-center gap-3"><SidebarTrigger className="md:hidden" /><span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Consultant research desk</span></div>
+        <header className="flex h-[4.5rem] items-center justify-between border-b border-border/80 bg-background/80 px-4 backdrop-blur-xl md:px-6">
+          <div className="flex min-w-0 items-center gap-3"><SidebarTrigger className="md:hidden" aria-label="Open workspace navigation" /><span className="truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{activeDestination?.label ?? "Research desk"}</span></div>
           <Button onClick={() => setLocation("/new")} size="sm" className="rounded-xl bg-primary px-3 text-primary-foreground hover:bg-primary/90"><Plus className="mr-1.5 size-3.5" />New scan</Button>
         </header>
-        <main className="mx-auto w-full max-w-[1600px] p-4 md:p-7 lg:p-9">{children}</main>
+        <main className="app-workspace mx-auto w-full max-w-[1600px] p-4 md:p-6 lg:p-7">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

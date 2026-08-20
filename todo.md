@@ -174,3 +174,8 @@
 - [x] Audit the home dashboard’s vertical hierarchy and define a compact first-viewport information architecture.
 - [x] Redesign the home dashboard with decision-priority content, progressive disclosure, and concise activity presentation.
 - [x] Verify the compact dashboard at desktop and mobile breakpoints, add regression coverage where appropriate, and publish the improvement.
+- [x] Capture and assess every routed workspace at representative desktop and mobile breakpoints.
+- [x] Define shared experience standards for page hierarchy, action placement, loading and empty states, responsive density, and accessibility feedback.
+- [x] Apply the prioritized UI/UX remediation pass across research, intelligence, delivery, organization, and governance workspaces.
+- [x] Add regression coverage for the shared UI standards and validate the refined application on desktop and mobile.
+- [ ] Publish the comprehensive UI/UX diagnostic and improvement release.
