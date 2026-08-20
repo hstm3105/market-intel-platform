@@ -10,6 +10,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { marketMonitorHandler } from "../marketIntel/monitoringHandler";
 import { retentionHandler } from "../marketIntel/retentionHandler";
+import { executiveBriefingHandler } from "../marketIntel/executiveBriefingHandler";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -40,6 +41,7 @@ async function startServer() {
   registerOAuthRoutes(app);
   app.post("/api/scheduled/market-monitor", marketMonitorHandler);
   app.post("/api/scheduled/retention-enforcement", retentionHandler);
+  app.post("/api/scheduled/executive-briefing", executiveBriefingHandler);
   // tRPC API
   app.use(
     "/api/trpc",

@@ -163,3 +163,11 @@
 - [x] Activate a project-level daily 08:00 IST scheduled monitoring refresh workflow for organization watchlists.
 - [x] Activate and verify a project-level daily 08:00 IST retention-enforcement workflow with legal-hold protection.
 - [x] Record and validate the active recurring-job configuration in the governance operations log.
+- [x] Define organization-private executive briefing records, distribution settings, and scheduled-job ownership.
+- [x] Implement evidence-bounded executive digest generation, review status, and immutable distribution history.
+- [x] Add protected delivery controls for on-demand generation, weekly scheduling, and approved internal distribution.
+- [x] Build a polished Executive Briefing workspace that unifies portfolio signals, private evidence, approvals, and delivery status.
+- [x] Improve navigation hierarchy, cross-workspace empty states, interaction feedback, and mobile workflow continuity.
+- [x] Add automated coverage for executive-brief privacy, scheduling boundaries, review controls, and UI data contracts.
+- [ ] Validate and publish the executive distribution and experience-cleanup release.
+- [ ] Activate and verify the organization’s default weekly Monday 09:00 IST executive briefing job after publication.

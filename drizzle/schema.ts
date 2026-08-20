@@ -230,6 +230,51 @@ export const clientDeliverySnapshots = mysqlTable(
   table => [index("client_delivery_snapshots_org_target_idx").on(table.organizationId, table.targetType, table.targetId, table.createdAt), index("client_delivery_snapshots_org_approved_idx").on(table.organizationId, table.approvedByUserId, table.approvedAt)]
 );
 
+export const executiveBriefingSettings = mysqlTable(
+  "executive_briefing_settings",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    updatedByUserId: int("updatedByUserId").notNull(),
+    enabled: boolean("enabled").default(false).notNull(),
+    cadence: mysqlEnum("cadence", ["weekly", "monthly"]).default("weekly").notNull(),
+    cronExpression: varchar("cronExpression", { length: 80 }).notNull(),
+    scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
+    approvalRequired: boolean("approvalRequired").default(true).notNull(),
+    lastGeneratedAt: timestamp("lastGeneratedAt"),
+    nextRunAt: timestamp("nextRunAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("executive_briefing_settings_org_unique").on(table.organizationId), index("executive_briefing_settings_task_idx").on(table.scheduleCronTaskUid), index("executive_briefing_settings_org_enabled_idx").on(table.organizationId, table.enabled, table.updatedAt)]
+);
+
+export const executiveBriefings = mysqlTable(
+  "executive_briefings",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    settingId: varchar("settingId", { length: 32 }).notNull(),
+    generatedByUserId: int("generatedByUserId").notNull(),
+    trigger: mysqlEnum("trigger", ["on_demand", "scheduled"]).notNull(),
+    reviewStatus: mysqlEnum("reviewStatus", ["draft", "approved", "distributed"]).default("draft").notNull(),
+    periodLabel: varchar("periodLabel", { length: 120 }).notNull(),
+    title: varchar("title", { length: 240 }).notNull(),
+    contentJson: longtext("contentJson").notNull(),
+    citationsJson: longtext("citationsJson").notNull(),
+    sourceScanIdsJson: longtext("sourceScanIdsJson").notNull(),
+    evidenceDigest: varchar("evidenceDigest", { length: 128 }).notNull(),
+    model: varchar("model", { length: 120 }).notNull(),
+    approvedByUserId: int("approvedByUserId"),
+    approvedAt: timestamp("approvedAt"),
+    distributedByUserId: int("distributedByUserId"),
+    distributedAt: timestamp("distributedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [index("executive_briefings_org_created_idx").on(table.organizationId, table.createdAt), index("executive_briefings_org_review_idx").on(table.organizationId, table.reviewStatus, table.updatedAt), index("executive_briefings_setting_created_idx").on(table.settingId, table.createdAt)]
+);
+
 export const organizationRetentionRuns = mysqlTable(
   "organization_retention_runs",
   {

@@ -4,24 +4,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { BellRing, BookOpenCheck, BookOpenText, Bot, Building2, FolderOpen, GitCompareArrows, LayoutDashboard, Lock, LogOut, MessagesSquare, PanelLeft, Plus, Search, Send, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
+import { BellRing, BookOpenCheck, BookOpenText, Bot, Building2, FolderOpen, GitCompareArrows, LayoutDashboard, Lock, LogOut, MessagesSquare, PanelLeft, Plus, RadioTower, Search, Send, ShieldCheck, Sparkles, Waypoints } from "lucide-react";
 import { useLocation } from "wouter";
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "Overview", path: "/" },
-  { icon: Search, label: "New research", path: "/new" },
-  { icon: FolderOpen, label: "Workspace", path: "/workspace" },
-  { icon: GitCompareArrows, label: "Compare risks", path: "/risk-comparison" },
-  { icon: BookOpenText, label: "Tracked industries", path: "/industries" },
-  { icon: BellRing, label: "Monitoring", path: "/monitoring" },
-  { icon: ShieldCheck, label: "Source intelligence", path: "/source-intelligence" },
-  { icon: BookOpenCheck, label: "Knowledge", path: "/knowledge" },
-  { icon: Waypoints, label: "Portfolio", path: "/portfolio" },
-  { icon: Send, label: "Client delivery", path: "/delivery" },
-  { icon: Building2, label: "Organization", path: "/organization" },
-  { icon: MessagesSquare, label: "Collaboration", path: "/collaboration" },
-  { icon: Bot, label: "Evidence agents", path: "/agents" },
-  { icon: Lock, label: "Governance", path: "/governance" },
+const menuGroups = [
+  { label: "Research", items: [{ icon: LayoutDashboard, label: "Overview", path: "/" }, { icon: Search, label: "New research", path: "/new" }, { icon: FolderOpen, label: "Workspace", path: "/workspace" }, { icon: BookOpenText, label: "Tracked industries", path: "/industries" }, { icon: BellRing, label: "Monitoring", path: "/monitoring" }] },
+  { label: "Intelligence", items: [{ icon: ShieldCheck, label: "Source intelligence", path: "/source-intelligence" }, { icon: BookOpenCheck, label: "Knowledge", path: "/knowledge" }, { icon: Bot, label: "Evidence agents", path: "/agents" }, { icon: GitCompareArrows, label: "Compare risks", path: "/risk-comparison" }, { icon: Waypoints, label: "Portfolio", path: "/portfolio" }] },
+  { label: "Delivery", items: [{ icon: RadioTower, label: "Executive briefings", path: "/executive-briefings" }, { icon: Send, label: "Client delivery", path: "/delivery" }, { icon: MessagesSquare, label: "Collaboration", path: "/collaboration" }] },
+  { label: "Administration", items: [{ icon: Building2, label: "Organization", path: "/organization" }, { icon: Lock, label: "Governance", path: "/governance" }] },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -53,16 +43,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </SidebarHeader>
         <SidebarContent className="px-2 py-5">
-          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#aabbb0] group-data-[collapsible=icon]:hidden">Workspace</p>
-          <SidebarMenu>
-            {menuItems.map(item => {
-              const isActive = item.path === "/" ? location === "/" : location === item.path || location.startsWith(`${item.path}/`);
-              return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={isActive} tooltip={item.label} onClick={() => setLocation(item.path)} className="h-11 rounded-xl text-[#dce6de] hover:bg-white/10 hover:text-white data-[active=true]:bg-[#e6cc83] data-[active=true]:text-[#173a33]"><item.icon className="size-4" /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>;
-            })}
-          </SidebarMenu>
+          <div className="space-y-5">{menuGroups.map(group => <div key={group.label}><p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#aabbb0] group-data-[collapsible=icon]:hidden">{group.label}</p><SidebarMenu>{group.items.map(item => { const isActive = item.path === "/" ? location === "/" : location === item.path || location.startsWith(`${item.path}/`); return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={isActive} tooltip={item.label} onClick={() => setLocation(item.path)} className="h-10 rounded-xl text-[#dce6de] hover:bg-white/10 hover:text-white data-[active=true]:bg-[#e6cc83] data-[active=true]:text-[#173a33]"><item.icon className="size-4" /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>; })}</SidebarMenu></div>)}</div>
           <div className="mx-2 mt-8 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 group-data-[collapsible=icon]:hidden">
             <p className="text-xs font-medium text-[#edf2ec]">Research with intent</p>
-            <p className="mt-2 text-xs leading-5 text-[#afc0b5]">Each scan preserves sources, analysis, and your strategic notes.</p>
+            <p className="mt-2 text-xs leading-5 text-[#afc0b5]">From source-grounded scans to executive-ready distribution, every decision stays traceable.</p>
             <button onClick={() => setLocation("/new")} className="mt-4 flex items-center gap-2 text-xs font-semibold text-[#e6cc83]"><Plus className="size-3.5" /> Launch a scan</button>
           </div>
         </SidebarContent>

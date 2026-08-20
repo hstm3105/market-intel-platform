@@ -9,6 +9,7 @@ describe("Mobile companion organization-private data boundary", () => {
     expect(mobileCompanionSource).toContain("trpc.marketIntel.collaboration.notifications.useQuery(undefined, { enabled: Boolean(user) })");
     expect(mobileCompanionSource).toContain("trpc.marketIntel.portfolio.operations.useQuery(undefined, { enabled: Boolean(user) })");
     expect(mobileCompanionSource).toContain("trpc.marketIntel.delivery.overview.useQuery(undefined, { enabled: Boolean(user) })");
+    expect(mobileCompanionSource).toContain("trpc.marketIntel.executive.overview.useQuery(undefined, { enabled: Boolean(user) })");
     expect(mobileCompanionSource).not.toMatch(/organizationId\s*:/);
   });
 
