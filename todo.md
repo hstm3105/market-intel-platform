@@ -184,3 +184,6 @@
 - [x] Add organization-private Google Workspace destination configuration, authorization status, and audit coverage.
 - [ ] Authorize and verify a real Google Workspace connection and approved executive briefing delivery.
 - [ ] Test, publish, and document the Google Workspace delivery integration release.
+- [ ] Review the current source tree and secrets exclusions before private GitHub export.
+- [ ] Create a private GitHub repository and push the current market intelligence platform source.
+- [ ] Verify the remote repository contains the current published implementation and record the backup location.
