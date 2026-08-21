@@ -275,6 +275,25 @@ export const executiveBriefings = mysqlTable(
   table => [index("executive_briefings_org_created_idx").on(table.organizationId, table.createdAt), index("executive_briefings_org_review_idx").on(table.organizationId, table.reviewStatus, table.updatedAt), index("executive_briefings_setting_created_idx").on(table.settingId, table.createdAt)]
 );
 
+export const executiveBriefingDeliveries = mysqlTable(
+  "executive_briefing_deliveries",
+  {
+    id: varchar("id", { length: 32 }).primaryKey(),
+    organizationId: varchar("organizationId", { length: 32 }).notNull(),
+    briefingId: varchar("briefingId", { length: 32 }).notNull(),
+    requestedByUserId: int("requestedByUserId").notNull(),
+    destination: mysqlEnum("destination", ["gmail", "google_docs", "google_sheets"]).notNull(),
+    status: mysqlEnum("status", ["created", "sent", "failed"]).notNull(),
+    recipientJson: longtext("recipientJson").notNull(),
+    externalFileId: varchar("externalFileId", { length: 160 }),
+    externalUrl: varchar("externalUrl", { length: 1_024 }),
+    contentDigest: varchar("contentDigest", { length: 128 }).notNull(),
+    errorCode: varchar("errorCode", { length: 120 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("executive_briefing_deliveries_org_briefing_created_idx").on(table.organizationId, table.briefingId, table.createdAt), index("executive_briefing_deliveries_org_destination_created_idx").on(table.organizationId, table.destination, table.createdAt)]
+);
+
 export const organizationRetentionRuns = mysqlTable(
   "organization_retention_runs",
   {

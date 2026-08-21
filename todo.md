@@ -179,3 +179,8 @@
 - [x] Apply the prioritized UI/UX remediation pass across research, intelligence, delivery, organization, and governance workspaces.
 - [x] Add regression coverage for the shared UI standards and validate the refined application on desktop and mobile.
 - [x] Publish the comprehensive UI/UX diagnostic and improvement release.
+- [x] Assess secure Google Workspace connection options for Gmail, Google Docs, and Google Sheets executive-briefing delivery.
+- [x] Implement approval-gated executive briefing exports and delivery records for Google Workspace destinations.
+- [x] Add organization-private Google Workspace destination configuration, authorization status, and audit coverage.
+- [ ] Authorize and verify a real Google Workspace connection and approved executive briefing delivery.
+- [ ] Test, publish, and document the Google Workspace delivery integration release.
