@@ -53,4 +53,19 @@ describe("Google Workspace executive delivery", () => {
     await expect(deliverExecutiveBriefingToGoogleWorkspace({ organizationId: "org-private", requestedByUserId: 7, briefingId: "brief-private", destination: "gmail", recipients: ["not-an-email"] })).rejects.toThrow(/valid recipient/i);
     expect(fetch).not.toHaveBeenCalled();
   });
+
+  it("normalizes hostile briefing titles before constructing Gmail headers", async () => {
+    mocks.limit.mockResolvedValue([{ ...approvedBriefing, title: "Market update\r\nBcc: attacker@example.com" }]);
+    const fetchMock = vi.mocked(fetch);
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "ya29.test" }), { status: 200 }));
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ id: "message-42" }), { status: 200 }));
+
+    await deliverExecutiveBriefingToGoogleWorkspace({ organizationId: "org-private", requestedByUserId: 7, briefingId: "brief-private", destination: "gmail", recipients: ["recipient@example.com"] });
+
+    const request = fetchMock.mock.calls[1][1];
+    const raw = JSON.parse(String(request?.body)).raw as string;
+    const message = Buffer.from(raw, "base64url").toString("utf8");
+    expect(message).not.toContain("\r\nBcc:");
+    expect(message).toContain("Subject: [Executive briefing] Market update Bcc: attacker@example.com");
+  });
 });

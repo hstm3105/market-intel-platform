@@ -182,8 +182,16 @@
 - [x] Assess secure Google Workspace connection options for Gmail, Google Docs, and Google Sheets executive-briefing delivery.
 - [x] Implement approval-gated executive briefing exports and delivery records for Google Workspace destinations.
 - [x] Add organization-private Google Workspace destination configuration, authorization status, and audit coverage.
-- [ ] Authorize and verify a real Google Workspace connection and approved executive briefing delivery.
-- [ ] Test, publish, and document the Google Workspace delivery integration release.
-- [ ] Review the current source tree and secrets exclusions before private GitHub export.
-- [ ] Create a private GitHub repository and push the current market intelligence platform source.
-- [ ] Verify the remote repository contains the current published implementation and record the backup location.
+- [x] Authorize and verify a real Google Workspace connection and approved executive briefing delivery.
+- [x] Test, publish, and document the Google Workspace delivery integration release.
+- [x] Review the current source tree and secrets exclusions before private GitHub export.
+- [x] Create a private GitHub repository and push the current market intelligence platform source.
+- [x] Verify the remote repository contains the current published implementation and record the backup location.
+- [x] Change the GitHub repository visibility from private to public and verify public access.
+- [x] Generate and approve an evidence-bounded executive briefing from the active organization’s private research.
+- [x] Create and verify native Google Docs and Google Sheets outputs for the approved executive briefing.
+- [x] Obtain explicit confirmation and send the approved executive briefing through Gmail with an immutable delivery record.
+- [x] Revalidate every application route at desktop and mobile breakpoints against the documented UI/UX design principles.
+- [x] Correct the Evidence Agents navigation and route mismatch discovered during application-wide UI/UX validation.
+- [x] Perform an end-to-end code audit covering authorization, secret handling, user inputs, dependencies, and production attack surfaces.
+- [x] Remediate confirmed security findings, add regression coverage, and publish the final validation release.

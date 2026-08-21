@@ -12,6 +12,7 @@ type BriefingRecord = typeof executiveBriefings.$inferSelect;
 const requireDb = async () => { const db = await getDb(); if (!db) throw new Error("The executive delivery database is currently unavailable."); return db; };
 const parseJson = <T>(value: string, fallback: T) => { try { return JSON.parse(value) as T; } catch { return fallback; } };
 const htmlEscape = (value: string) => value.replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char] ?? char));
+const mailHeader = (value: string) => value.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 240);
 const briefContent = (briefing: BriefingRecord) => parseJson<ExecutiveBriefingContent>(briefing.contentJson, { headline: briefing.title, briefingSummary: "", priorityMoves: [], watchSignals: [], uncertainty: "" });
 const citationsFor = (briefing: BriefingRecord) => parseJson<Citation[]>(briefing.citationsJson, []);
 
@@ -68,7 +69,7 @@ async function createGoogleSheet(briefing: BriefingRecord) {
 
 async function sendGmail(briefing: BriefingRecord, recipients: string[]) {
   const sender = process.env.GOOGLE_WORKSPACE_SENDER_EMAIL; if (!sender) throw new Error("Google Workspace sender email is not configured.");
-  const subject = `[Executive briefing] ${briefing.title}`; const raw = Buffer.from([`From: ${sender}`, `To: ${recipients.join(", ")}`, `Subject: ${subject}`, "MIME-Version: 1.0", "Content-Type: text/plain; charset=UTF-8", "", briefingText(briefing)].join("\r\n"), "utf8").toString("base64url"); await googleFetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ raw }) }); return { externalFileId: null, externalUrl: null };
+  const subject = mailHeader(`[Executive briefing] ${briefing.title}`); const raw = Buffer.from([`From: ${mailHeader(sender)}`, `To: ${recipients.map(mailHeader).join(", ")}`, `Subject: ${subject}`, "MIME-Version: 1.0", "Content-Type: text/plain; charset=UTF-8", "", briefingText(briefing)].join("\r\n"), "utf8").toString("base64url"); await googleFetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ raw }) }); return { externalFileId: null, externalUrl: null };
 }
 
 export async function listExecutiveBriefingDeliveries(organizationId: string) { const db = await requireDb(); const rows = await db.select().from(executiveBriefingDeliveries).where(eq(executiveBriefingDeliveries.organizationId, organizationId)).orderBy(desc(executiveBriefingDeliveries.createdAt)).limit(100); return rows.filter(row => row.organizationId === organizationId).map(row => ({ ...row, recipients: parseJson<string[]>(row.recipientJson, []) })); }
